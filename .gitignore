@@ -22,3 +22,23 @@ env/
 logs/
 
 # OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+ehthumbs.db
+Icon?
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Generated scientific/model artifacts
+*.npz
+*.hdf5
+*.h5
+*.pt
+*.pth
+*.ckpt
