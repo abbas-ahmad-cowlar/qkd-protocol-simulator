@@ -25,3 +25,25 @@ Conventions:
 import numpy as np
 
 
+def _return_scalar_if_scalar(x, out):
+    """Return a Python float when x was a scalar; otherwise return the array.
+
+    Keeps notebook printing and downstream plotting clean: scalar inputs
+    produce plain floats, while array inputs preserve the array type.
+
+    Parameters
+    ----------
+    x : scalar or array-like
+        The original input before np.asarray conversion.
+    out : numpy.ndarray
+        The computed result array.
+
+    Returns
+    -------
+    float or numpy.ndarray
+    """
+    if np.ndim(x) == 0:
+        return float(out)
+    return out
+
+
