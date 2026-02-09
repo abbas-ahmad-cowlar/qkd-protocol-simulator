@@ -47,3 +47,40 @@ def _return_scalar_if_scalar(x, out):
     return out
 
 
+def binary_entropy(p):
+    """Compute the binary entropy h(p) = -p log2(p) - (1-p) log2(1-p).
+
+    Physics: h(p) is the Shannon entropy of a Bernoulli variable. It is the
+    workhorse function for DV-QKD security:
+        - BB84 key rate (ideal, f_ec = 1):  R = 1 - 2 h(QBER)
+        - Ideal security threshold:         h(QBER) = 0.5  ->  QBER ~= 0.110027
+
+    Parameters
+    ----------
+    p : float or numpy.ndarray
+        Error probability or array of probabilities. Must lie in [0, 1].
+
+    Returns
+    -------
+    float or numpy.ndarray
+        Binary entropy in bits. Returns 0.0 at p = 0 and p = 1.
+
+    Raises
+    ------
+    ValueError
+        If any value of p lies outside [0, 1].
+    """
+    p_arr = np.asarray(p, dtype=float)
+    if np.any(p_arr < 0) or np.any(p_arr > 1):
+        raise ValueError(
+            f"p must be in [0, 1], got min={p_arr.min()}, max={p_arr.max()}"
+        )
+
+    out = np.zeros_like(p_arr)
+    mask = (p_arr > 0) & (p_arr < 1)
+    pm = p_arr[mask]
+    out[mask] = -pm * np.log2(pm) - (1 - pm) * np.log2(1 - pm)
+
+    return _return_scalar_if_scalar(p, out)
+
+
