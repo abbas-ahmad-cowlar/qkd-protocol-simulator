@@ -36,3 +36,9 @@ def test_return_scalar_if_scalar_array_input():
 # 1. binary_entropy
 # ---------------------------------------------------------------------------
 
+def test_binary_entropy_known_values():
+    assert np.isclose(binary_entropy(0.0), 0.0)
+    assert np.isclose(binary_entropy(1.0), 0.0)
+    assert np.isclose(binary_entropy(0.5), 1.0)
+
+
