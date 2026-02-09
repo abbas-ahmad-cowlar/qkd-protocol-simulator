@@ -164,3 +164,54 @@ def mutual_information(p_xy, tol=1e-9):
     return max(0.0, mi)
 
 
+def gaussian_entropy(nu, tol=1e-9):
+    """Compute the von Neumann entropy of a single Gaussian mode from its
+    symplectic eigenvalue:
+
+        g(nu) = ((nu+1)/2) log2((nu+1)/2) - ((nu-1)/2) log2((nu-1)/2)
+
+    Physics: g(nu) is the entropy of a thermal mode in the Gaussian
+    formalism. It is the building block for the CV-QKD Holevo bound (Phase 5).
+        - g(1) = 0 : pure state (vacuum)
+        - g(nu) increases monotonically with nu
+
+    Convention: vacuum variance = 1, so nu >= 1 is the physical regime.
+    The relation to mean photon number is nu = 2 * nbar + 1.
+
+    Parameters
+    ----------
+    nu : float or numpy.ndarray
+        Symplectic eigenvalue(s). Must satisfy nu >= 1 within `tol`.
+    tol : float, optional
+        Tolerance for the nu >= 1 check (default 1e-9).
+
+    Returns
+    -------
+    float or numpy.ndarray
+        Gaussian entropy in bits. Returns 0.0 at nu = 1.
+
+    Raises
+    ------
+    ValueError
+        If any nu < 1 - tol (sub-vacuum, non-physical).
+    """
+    nu_arr = np.asarray(nu, dtype=float)
+    if np.any(nu_arr < 1.0 - tol):
+        raise ValueError(
+            f"Symplectic eigenvalue must be >= 1, got min={nu_arr.min()}"
+        )
+
+    nu_arr = np.maximum(nu_arr, 1.0)
+
+    x_plus = (nu_arr + 1) / 2
+    x_minus = (nu_arr - 1) / 2
+
+    out = np.zeros_like(nu_arr, dtype=float)
+
+    mask_plus = x_plus > 0
+    out[mask_plus] += x_plus[mask_plus] * np.log2(x_plus[mask_plus])
+
+    mask_minus = x_minus > 0
+    out[mask_minus] -= x_minus[mask_minus] * np.log2(x_minus[mask_minus])
+
+    return _return_scalar_if_scalar(nu, out)
