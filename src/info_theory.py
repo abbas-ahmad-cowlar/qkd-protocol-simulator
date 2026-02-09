@@ -84,3 +84,37 @@ def binary_entropy(p):
     return _return_scalar_if_scalar(p, out)
 
 
+def shannon_entropy(probs, tol=1e-9):
+    """Compute the Shannon entropy H(X) = -sum p(x) log2(p(x)) in bits.
+
+    Physics: H(X) measures the average uncertainty of a random variable X.
+        - H = 0           : deterministic (one outcome has p = 1)
+        - H = log2(n)     : uniform distribution over n outcomes (maximum)
+
+    Parameters
+    ----------
+    probs : array-like
+        1-D probability distribution. Non-negative, sums to 1 within `tol`.
+    tol : float, optional
+        Tolerance for the normalization check (default 1e-9).
+
+    Returns
+    -------
+    float
+        Shannon entropy in bits.
+
+    Raises
+    ------
+    ValueError
+        If any probability is negative, or the distribution does not sum to 1.
+    """
+    p = np.asarray(probs, dtype=float).ravel()
+    if np.any(p < 0):
+        raise ValueError("Probabilities must be non-negative")
+    if abs(p.sum() - 1.0) > tol:
+        raise ValueError(f"Probabilities must sum to 1, got {p.sum():.10f}")
+
+    mask = p > 0
+    return -float(np.sum(p[mask] * np.log2(p[mask])))
+
+
