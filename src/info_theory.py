@@ -118,3 +118,49 @@ def shannon_entropy(probs, tol=1e-9):
     return -float(np.sum(p[mask] * np.log2(p[mask])))
 
 
+def mutual_information(p_xy, tol=1e-9):
+    """Compute mutual information I(X;Y) = H(X) + H(Y) - H(X,Y) from a joint
+    probability matrix.
+
+    Physics:
+        I(Alice; Bob) bounds the extractable secret-key rate per sifted bit.
+        I(Alice; Eve) bounds Eve's classical information.
+        Csiszar-Korner one-way bound:  R >= I(A;B) - I(A;E).
+
+    Parameters
+    ----------
+    p_xy : array-like, shape (m, n)
+        Joint distribution p(x, y). Non-negative; sums to 1 within `tol`.
+        Rows index X; columns index Y.
+    tol : float, optional
+        Tolerance for the normalization check (default 1e-9).
+
+    Returns
+    -------
+    float
+        Mutual information in bits, clamped to be non-negative.
+
+    Raises
+    ------
+    ValueError
+        If `p_xy` is not a valid 2-D joint distribution.
+    """
+    p = np.asarray(p_xy, dtype=float)
+    if p.ndim != 2:
+        raise ValueError(f"p_xy must be 2-D, got {p.ndim}-D")
+    if np.any(p < 0):
+        raise ValueError("Joint probabilities must be non-negative")
+    if abs(p.sum() - 1.0) > tol:
+        raise ValueError(f"Joint probabilities must sum to 1, got {p.sum():.10f}")
+
+    p_x = p.sum(axis=1)
+    p_y = p.sum(axis=0)
+
+    h_x = shannon_entropy(p_x, tol=tol)
+    h_y = shannon_entropy(p_y, tol=tol)
+    h_xy = shannon_entropy(p.ravel(), tol=tol)
+
+    mi = h_x + h_y - h_xy
+    return max(0.0, mi)
+
+
