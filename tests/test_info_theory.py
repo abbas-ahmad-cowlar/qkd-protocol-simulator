@@ -27,3 +27,12 @@ def test_return_scalar_if_scalar_scalar_input():
     assert isinstance(_return_scalar_if_scalar(0.5, np.array(1.0)), float)
 
 
+def test_return_scalar_if_scalar_array_input():
+    out = _return_scalar_if_scalar(np.array([0.5]), np.array([1.0]))
+    assert isinstance(out, np.ndarray)
+
+
+# ---------------------------------------------------------------------------
+# 1. binary_entropy
+# ---------------------------------------------------------------------------
+
