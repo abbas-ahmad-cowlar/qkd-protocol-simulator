@@ -42,3 +42,8 @@ def test_binary_entropy_known_values():
     assert np.isclose(binary_entropy(0.5), 1.0)
 
 
+def test_binary_entropy_symmetry():
+    for p in [0.1, 0.2, 0.3, 0.4]:
+        assert np.isclose(binary_entropy(p), binary_entropy(1 - p))
+
+
