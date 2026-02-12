@@ -106,3 +106,8 @@ def test_shannon_entropy_invalid_distribution():
 # 3. mutual_information
 # ---------------------------------------------------------------------------
 
+def test_mutual_information_independent():
+    p_indep = np.array([[0.25, 0.25], [0.25, 0.25]])
+    assert np.isclose(mutual_information(p_indep), 0.0, atol=1e-10)
+
+
