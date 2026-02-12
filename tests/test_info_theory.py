@@ -67,3 +67,16 @@ def test_binary_entropy_scalar_returns_float():
     assert isinstance(binary_entropy(np.array([0.5])), np.ndarray)
 
 
+def test_binary_entropy_invalid_input():
+    with pytest.raises(ValueError):
+        binary_entropy(-0.1)
+    with pytest.raises(ValueError):
+        binary_entropy(1.1)
+    with pytest.raises(ValueError):
+        binary_entropy(np.array([0.1, 1.5]))
+
+
+# ---------------------------------------------------------------------------
+# 2. shannon_entropy
+# ---------------------------------------------------------------------------
+
