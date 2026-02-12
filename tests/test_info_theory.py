@@ -95,3 +95,14 @@ def test_shannon_entropy_fair_coin():
     assert np.isclose(shannon_entropy([0.5, 0.5]), 1.0)
 
 
+def test_shannon_entropy_invalid_distribution():
+    with pytest.raises(ValueError):
+        shannon_entropy([0.5, 0.3])  # sum != 1
+    with pytest.raises(ValueError):
+        shannon_entropy([-0.1, 1.1])  # negative
+
+
+# ---------------------------------------------------------------------------
+# 3. mutual_information
+# ---------------------------------------------------------------------------
+
