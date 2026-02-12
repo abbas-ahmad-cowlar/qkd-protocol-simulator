@@ -47,3 +47,8 @@ def test_binary_entropy_symmetry():
         assert np.isclose(binary_entropy(p), binary_entropy(1 - p))
 
 
+def test_binary_entropy_bb84_threshold():
+    h_11 = binary_entropy(0.110027)
+    assert abs(h_11 - 0.5) < 1e-4
+
+
