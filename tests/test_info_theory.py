@@ -52,3 +52,13 @@ def test_binary_entropy_bb84_threshold():
     assert abs(h_11 - 0.5) < 1e-4
 
 
+def test_binary_entropy_vectorized():
+    p = np.linspace(0, 1, 101)
+    h = binary_entropy(p)
+    assert h.shape == (101,)
+    assert np.isclose(h[0], 0.0)
+    assert np.isclose(h[50], 1.0)
+    assert np.isclose(h[-1], 0.0)
+    assert np.all(h >= -1e-15)
+
+
