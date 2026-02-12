@@ -80,3 +80,8 @@ def test_binary_entropy_invalid_input():
 # 2. shannon_entropy
 # ---------------------------------------------------------------------------
 
+def test_shannon_entropy_deterministic():
+    assert np.isclose(shannon_entropy([1, 0, 0, 0]), 0.0)
+    assert np.isclose(shannon_entropy([0, 0, 1, 0]), 0.0)
+
+
