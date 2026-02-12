@@ -62,3 +62,8 @@ def test_binary_entropy_vectorized():
     assert np.all(h >= -1e-15)
 
 
+def test_binary_entropy_scalar_returns_float():
+    assert isinstance(binary_entropy(0.5), float)
+    assert isinstance(binary_entropy(np.array([0.5])), np.ndarray)
+
+
