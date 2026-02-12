@@ -85,3 +85,9 @@ def test_shannon_entropy_deterministic():
     assert np.isclose(shannon_entropy([0, 0, 1, 0]), 0.0)
 
 
+def test_shannon_entropy_uniform():
+    for n in [2, 4, 6, 8, 16]:
+        probs = np.ones(n) / n
+        assert np.isclose(shannon_entropy(probs), np.log2(n), atol=1e-10)
+
+
