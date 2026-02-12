@@ -111,3 +111,9 @@ def test_mutual_information_independent():
     assert np.isclose(mutual_information(p_indep), 0.0, atol=1e-10)
 
 
+def test_mutual_information_perfect_correlation():
+    p_corr = np.array([[0.5, 0.0], [0.0, 0.5]])
+    assert np.isclose(mutual_information(p_corr), 1.0, atol=1e-10)
+
+
+@pytest.mark.parametrize("e", [0.0, 0.01, 0.05, 0.1, 0.15, 0.25, 0.5])
