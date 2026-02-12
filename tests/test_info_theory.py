@@ -117,3 +117,16 @@ def test_mutual_information_perfect_correlation():
 
 
 @pytest.mark.parametrize("e", [0.0, 0.01, 0.05, 0.1, 0.15, 0.25, 0.5])
+def test_mutual_information_bsc_cross_check(e):
+    """Cross-check: I(A;B) for a BSC equals 1 - h(e)."""
+    if e == 0.0:
+        p_bsc = np.array([[0.5, 0.0], [0.0, 0.5]])
+    elif e == 0.5:
+        p_bsc = np.array([[0.25, 0.25], [0.25, 0.25]])
+    else:
+        p_bsc = 0.5 * np.array([[1 - e, e], [e, 1 - e]])
+    mi = mutual_information(p_bsc)
+    expected = 1.0 - binary_entropy(e)
+    assert np.isclose(mi, expected, atol=1e-9)
+
+
