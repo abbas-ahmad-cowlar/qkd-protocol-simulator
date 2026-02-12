@@ -91,3 +91,7 @@ def test_shannon_entropy_uniform():
         assert np.isclose(shannon_entropy(probs), np.log2(n), atol=1e-10)
 
 
+def test_shannon_entropy_fair_coin():
+    assert np.isclose(shannon_entropy([0.5, 0.5]), 1.0)
+
+
