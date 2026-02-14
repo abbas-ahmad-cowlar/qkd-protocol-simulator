@@ -167,3 +167,10 @@ def test_gaussian_entropy_floating_point_clamp():
     assert np.isclose(gaussian_entropy(1.0 - 1e-12), 0.0, atol=1e-10)
 
 
+def test_gaussian_entropy_non_physical():
+    with pytest.raises(ValueError):
+        gaussian_entropy(0.5)
+    with pytest.raises(ValueError):
+        gaussian_entropy(np.array([1.0, 0.5]))
+
+
