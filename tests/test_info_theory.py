@@ -130,3 +130,8 @@ def test_mutual_information_bsc_cross_check(e):
     assert np.isclose(mi, expected, atol=1e-9)
 
 
+def test_mutual_information_invalid_shape():
+    with pytest.raises(ValueError):
+        mutual_information(np.array([0.5, 0.5]))
+
+
