@@ -144,3 +144,7 @@ def test_mutual_information_non_negative():
 # 4. gaussian_entropy
 # ---------------------------------------------------------------------------
 
+def test_gaussian_entropy_vacuum():
+    assert np.isclose(gaussian_entropy(1.0), 0.0, atol=1e-12)
+
+
