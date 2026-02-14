@@ -174,3 +174,12 @@ def test_gaussian_entropy_non_physical():
         gaussian_entropy(np.array([1.0, 0.5]))
 
 
+def test_gaussian_entropy_scalar_returns_float():
+    assert isinstance(gaussian_entropy(2.0), float)
+    assert isinstance(gaussian_entropy(np.array([2.0])), np.ndarray)
+
+
+# ---------------------------------------------------------------------------
+# 5. Phase 1 integration test (BB84 ideal threshold)
+# ---------------------------------------------------------------------------
+
