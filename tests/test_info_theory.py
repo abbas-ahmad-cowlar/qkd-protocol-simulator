@@ -1,0 +1,205 @@
+"""
+Unit + Integration Tests for src/info_theory.py
+================================================
+
+Covers all five functions plus the BSC/BB84 cross-check.
+Run with:  python tests/test_info_theory.py
+or:        pytest tests/test_info_theory.py
+"""
+
+import numpy as np
+import pytest
+
+from src.info_theory import (
+    _return_scalar_if_scalar,
+    binary_entropy,
+    shannon_entropy,
+    mutual_information,
+    gaussian_entropy,
+)
+
+
+# ---------------------------------------------------------------------------
+# 0. Helper
+# ---------------------------------------------------------------------------
+
+def test_return_scalar_if_scalar_scalar_input():
+    assert isinstance(_return_scalar_if_scalar(0.5, np.array(1.0)), float)
+
+
+def test_return_scalar_if_scalar_array_input():
+    out = _return_scalar_if_scalar(np.array([0.5]), np.array([1.0]))
+    assert isinstance(out, np.ndarray)
+
+
+# ---------------------------------------------------------------------------
+# 1. binary_entropy
+# ---------------------------------------------------------------------------
+
+def test_binary_entropy_known_values():
+    assert np.isclose(binary_entropy(0.0), 0.0)
+    assert np.isclose(binary_entropy(1.0), 0.0)
+    assert np.isclose(binary_entropy(0.5), 1.0)
+
+
+def test_binary_entropy_symmetry():
+    for p in [0.1, 0.2, 0.3, 0.4]:
+        assert np.isclose(binary_entropy(p), binary_entropy(1 - p))
+
+
+def test_binary_entropy_bb84_threshold():
+    h_11 = binary_entropy(0.110027)
+    assert abs(h_11 - 0.5) < 1e-4
+
+
+def test_binary_entropy_vectorized():
+    p = np.linspace(0, 1, 101)
+    h = binary_entropy(p)
+    assert h.shape == (101,)
+    assert np.isclose(h[0], 0.0)
+    assert np.isclose(h[50], 1.0)
+    assert np.isclose(h[-1], 0.0)
+    assert np.all(h >= -1e-15)
+
+
+def test_binary_entropy_scalar_returns_float():
+    assert isinstance(binary_entropy(0.5), float)
+    assert isinstance(binary_entropy(np.array([0.5])), np.ndarray)
+
+
+def test_binary_entropy_invalid_input():
+    with pytest.raises(ValueError):
+        binary_entropy(-0.1)
+    with pytest.raises(ValueError):
+        binary_entropy(1.1)
+    with pytest.raises(ValueError):
+        binary_entropy(np.array([0.1, 1.5]))
+
+
+# ---------------------------------------------------------------------------
+# 2. shannon_entropy
+# ---------------------------------------------------------------------------
+
+def test_shannon_entropy_deterministic():
+    assert np.isclose(shannon_entropy([1, 0, 0, 0]), 0.0)
+    assert np.isclose(shannon_entropy([0, 0, 1, 0]), 0.0)
+
+
+def test_shannon_entropy_uniform():
+    for n in [2, 4, 6, 8, 16]:
+        probs = np.ones(n) / n
+        assert np.isclose(shannon_entropy(probs), np.log2(n), atol=1e-10)
+
+
+def test_shannon_entropy_fair_coin():
+    assert np.isclose(shannon_entropy([0.5, 0.5]), 1.0)
+
+
+def test_shannon_entropy_invalid_distribution():
+    with pytest.raises(ValueError):
+        shannon_entropy([0.5, 0.3])  # sum != 1
+    with pytest.raises(ValueError):
+        shannon_entropy([-0.1, 1.1])  # negative
+
+
+# ---------------------------------------------------------------------------
+# 3. mutual_information
+# ---------------------------------------------------------------------------
+
+def test_mutual_information_independent():
+    p_indep = np.array([[0.25, 0.25], [0.25, 0.25]])
+    assert np.isclose(mutual_information(p_indep), 0.0, atol=1e-10)
+
+
+def test_mutual_information_perfect_correlation():
+    p_corr = np.array([[0.5, 0.0], [0.0, 0.5]])
+    assert np.isclose(mutual_information(p_corr), 1.0, atol=1e-10)
+
+
+@pytest.mark.parametrize("e", [0.0, 0.01, 0.05, 0.1, 0.15, 0.25, 0.5])
+def test_mutual_information_bsc_cross_check(e):
+    """Cross-check: I(A;B) for a BSC equals 1 - h(e)."""
+    if e == 0.0:
+        p_bsc = np.array([[0.5, 0.0], [0.0, 0.5]])
+    elif e == 0.5:
+        p_bsc = np.array([[0.25, 0.25], [0.25, 0.25]])
+    else:
+        p_bsc = 0.5 * np.array([[1 - e, e], [e, 1 - e]])
+    mi = mutual_information(p_bsc)
+    expected = 1.0 - binary_entropy(e)
+    assert np.isclose(mi, expected, atol=1e-9)
+
+
+def test_mutual_information_invalid_shape():
+    with pytest.raises(ValueError):
+        mutual_information(np.array([0.5, 0.5]))
+
+
+def test_mutual_information_non_negative():
+    p_rect = np.array([[0.2, 0.1], [0.15, 0.15], [0.2, 0.2]])
+    assert mutual_information(p_rect) >= 0
+
+
+# ---------------------------------------------------------------------------
+# 4. gaussian_entropy
+# ---------------------------------------------------------------------------
+
+def test_gaussian_entropy_vacuum():
+    assert np.isclose(gaussian_entropy(1.0), 0.0, atol=1e-12)
+
+
+def test_gaussian_entropy_known_value():
+    # nu = 3 -> x_plus = 2, x_minus = 1
+    # g(3) = 2 * log2(2) - 1 * log2(1) = 2 * 1 - 0 = 2.0
+    assert np.isclose(gaussian_entropy(3.0), 2.0, atol=1e-10)
+
+
+def test_gaussian_entropy_monotonic():
+    nu_arr = np.linspace(1.0, 10.0, 100)
+    g_arr = gaussian_entropy(nu_arr)
+    assert g_arr.shape == (100,)
+    assert np.isclose(g_arr[0], 0.0)
+    assert np.all(np.diff(g_arr) >= -1e-12)
+
+
+def test_gaussian_entropy_floating_point_clamp():
+    # Value slightly below 1 within tol should not raise; clamps to nu = 1.
+    assert np.isclose(gaussian_entropy(1.0 - 1e-12), 0.0, atol=1e-10)
+
+
+def test_gaussian_entropy_non_physical():
+    with pytest.raises(ValueError):
+        gaussian_entropy(0.5)
+    with pytest.raises(ValueError):
+        gaussian_entropy(np.array([1.0, 0.5]))
+
+
+def test_gaussian_entropy_scalar_returns_float():
+    assert isinstance(gaussian_entropy(2.0), float)
+    assert isinstance(gaussian_entropy(np.array([2.0])), np.ndarray)
+
+
+# ---------------------------------------------------------------------------
+# 5. Phase 1 integration test (BB84 ideal threshold)
+# ---------------------------------------------------------------------------
+
+def test_bb84_ideal_threshold_integration():
+    """1 - 2 h(QBER) crosses zero at QBER ~= 0.110027."""
+    qber = np.linspace(0, 0.5, 5001)
+    rate = 1.0 - 2 * binary_entropy(qber)
+    assert np.isclose(rate[0], 1.0)
+    zero_idx = np.argmin(np.abs(rate))
+    qber_threshold = qber[zero_idx]
+    assert abs(qber_threshold - 0.110027) < 1e-3, (
+        f"Ideal BB84 threshold should be ~0.110027, got {qber_threshold}"
+    )
+
+
+# ---------------------------------------------------------------------------
+# Allow `python tests/test_info_theory.py` invocation
+# ---------------------------------------------------------------------------
+
+if __name__ == "__main__":
+    import sys
+
+    sys.exit(pytest.main([__file__, "-v"]))
