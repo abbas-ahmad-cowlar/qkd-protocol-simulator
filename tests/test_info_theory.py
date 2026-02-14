@@ -148,3 +148,9 @@ def test_gaussian_entropy_vacuum():
     assert np.isclose(gaussian_entropy(1.0), 0.0, atol=1e-12)
 
 
+def test_gaussian_entropy_known_value():
+    # nu = 3 -> x_plus = 2, x_minus = 1
+    # g(3) = 2 * log2(2) - 1 * log2(1) = 2 * 1 - 0 = 2.0
+    assert np.isclose(gaussian_entropy(3.0), 2.0, atol=1e-10)
+
+
