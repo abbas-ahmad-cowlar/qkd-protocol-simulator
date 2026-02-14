@@ -154,3 +154,11 @@ def test_gaussian_entropy_known_value():
     assert np.isclose(gaussian_entropy(3.0), 2.0, atol=1e-10)
 
 
+def test_gaussian_entropy_monotonic():
+    nu_arr = np.linspace(1.0, 10.0, 100)
+    g_arr = gaussian_entropy(nu_arr)
+    assert g_arr.shape == (100,)
+    assert np.isclose(g_arr[0], 0.0)
+    assert np.all(np.diff(g_arr) >= -1e-12)
+
+
