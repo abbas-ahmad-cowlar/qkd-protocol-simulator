@@ -162,3 +162,8 @@ def test_gaussian_entropy_monotonic():
     assert np.all(np.diff(g_arr) >= -1e-12)
 
 
+def test_gaussian_entropy_floating_point_clamp():
+    # Value slightly below 1 within tol should not raise; clamps to nu = 1.
+    assert np.isclose(gaussian_entropy(1.0 - 1e-12), 0.0, atol=1e-10)
+
+
