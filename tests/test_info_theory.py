@@ -183,3 +183,23 @@ def test_gaussian_entropy_scalar_returns_float():
 # 5. Phase 1 integration test (BB84 ideal threshold)
 # ---------------------------------------------------------------------------
 
+def test_bb84_ideal_threshold_integration():
+    """1 - 2 h(QBER) crosses zero at QBER ~= 0.110027."""
+    qber = np.linspace(0, 0.5, 5001)
+    rate = 1.0 - 2 * binary_entropy(qber)
+    assert np.isclose(rate[0], 1.0)
+    zero_idx = np.argmin(np.abs(rate))
+    qber_threshold = qber[zero_idx]
+    assert abs(qber_threshold - 0.110027) < 1e-3, (
+        f"Ideal BB84 threshold should be ~0.110027, got {qber_threshold}"
+    )
+
+
+# ---------------------------------------------------------------------------
+# Allow `python tests/test_info_theory.py` invocation
+# ---------------------------------------------------------------------------
+
+if __name__ == "__main__":
+    import sys
+
+    sys.exit(pytest.main([__file__, "-v"]))
