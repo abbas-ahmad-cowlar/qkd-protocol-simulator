@@ -135,3 +135,12 @@ def test_mutual_information_invalid_shape():
         mutual_information(np.array([0.5, 0.5]))
 
 
+def test_mutual_information_non_negative():
+    p_rect = np.array([[0.2, 0.1], [0.15, 0.15], [0.2, 0.2]])
+    assert mutual_information(p_rect) >= 0
+
+
+# ---------------------------------------------------------------------------
+# 4. gaussian_entropy
+# ---------------------------------------------------------------------------
+
