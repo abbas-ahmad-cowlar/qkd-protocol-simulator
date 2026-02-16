@@ -43,3 +43,30 @@ def _get_rng(rng=None):
     return np.random.default_rng(rng)
 
 
+def alice_prepare(n_bits, rng=None):
+    """Alice prepares n_bits random bits in random bases.
+
+    Physics: Alice randomly chooses a bit (0 or 1) and a basis (0=Z, 1=X)
+    for each round. The corresponding state from the BB84 encoding table
+    is sent to Bob; we track only (bit, basis) here.
+
+    Parameters
+    ----------
+    n_bits : int
+        Number of bits / qubits to prepare.
+    rng : None, int, or numpy.random.Generator
+        Random number generator or seed.
+
+    Returns
+    -------
+    bits : numpy.ndarray of int, shape (n_bits,)
+        Alice's random bit values (0 or 1).
+    bases : numpy.ndarray of int, shape (n_bits,)
+        Alice's random basis choices (0 = Z, 1 = X).
+    """
+    rng = _get_rng(rng)
+    bits = rng.integers(0, 2, n_bits)
+    bases = rng.integers(0, 2, n_bits)
+    return bits, bases
+
+
