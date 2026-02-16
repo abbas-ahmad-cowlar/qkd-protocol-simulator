@@ -276,3 +276,14 @@ def eve_intercept_resend(alice_bits, alice_bases, interception_rate=1.0, rng=Non
     eve_bases = rng.integers(0, 2, n)
 
     eve_bits = np.copy(alice_bits)
+    eve_wrong_basis = intercepted & (eve_bases != alice_bases)
+    eve_bits[eve_wrong_basis] = rng.integers(0, 2, eve_wrong_basis.sum())
+
+    forwarded_bits = np.copy(alice_bits)
+    forwarded_bases = np.copy(alice_bases)
+    forwarded_bits[intercepted] = eve_bits[intercepted]
+    forwarded_bases[intercepted] = eve_bases[intercepted]
+
+    return eve_bits, forwarded_bits, forwarded_bases, intercepted
+
+
