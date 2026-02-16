@@ -125,3 +125,58 @@ def sift(alice_bits, bob_bits, alice_bases, bob_bases):
     return alice_bits[match], bob_bits[match]
 
 
+def estimate_qber(alice_sifted, bob_sifted, sample_fraction=0.1, rng=None):
+    """Estimate QBER from a randomly chosen sample of sifted bits.
+
+    Physics: Alice and Bob disclose a random subset of their sifted key
+    over the public channel and compare the BIT VALUES to estimate the
+    error rate. The disclosed bits are PUBLIC and must be REMOVED from
+    the remaining key -- they cannot contribute to the final secret key.
+
+    Parameters
+    ----------
+    alice_sifted, bob_sifted : numpy.ndarray of int
+        Sifted bits from Alice and Bob.
+    sample_fraction : float, optional
+        Fraction of sifted bits to disclose (default 0.1 = 10%). Must
+        be in (0, 1].
+    rng : None, int, or numpy.random.Generator
+        Random number generator or seed.
+
+    Returns
+    -------
+    qber : float
+        Fraction of disagreements in the disclosed sample.
+    alice_remaining, bob_remaining : numpy.ndarray of int
+        Sifted bits AFTER removing the disclosed sample.
+    sample_indices : numpy.ndarray of int
+        Indices (into the sifted arrays) of the disclosed bits.
+
+    Raises
+    ------
+    ValueError
+        If the sifted key is empty, or sample_fraction is outside (0, 1].
+    """
+    rng = _get_rng(rng)
+    n = len(alice_sifted)
+    if n == 0:
+        raise ValueError("cannot estimate QBER from an empty sifted key")
+    if not 0 < sample_fraction <= 1:
+        raise ValueError(
+            f"sample_fraction must be in (0, 1], got {sample_fraction}"
+        )
+
+    sample_size = max(1, int(n * sample_fraction))
+    sample_size = min(sample_size, n)
+    sample_indices = rng.choice(n, sample_size, replace=False)
+    sample_mask = np.zeros(n, dtype=bool)
+    sample_mask[sample_indices] = True
+
+    qber = float(np.mean(alice_sifted[sample_mask] != bob_sifted[sample_mask]))
+
+    return (
+        qber,
+        alice_sifted[~sample_mask],
+        bob_sifted[~sample_mask],
+        sample_indices,
+    )
