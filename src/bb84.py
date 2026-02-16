@@ -182,3 +182,42 @@ def estimate_qber(alice_sifted, bob_sifted, sample_fraction=0.1, rng=None):
     )
 
 
+def error_correction(alice_key, bob_key, qber, f_ec=1.16):
+    """Perfect-reconciliation stub returning the leaked information cost.
+
+    Physics: real protocols (Cascade, LDPC) exchange parity information
+    over the public channel to fix bit errors between Alice and Bob.
+    The minimum (Shannon-limit) leakage is n * h(QBER); practical
+    protocols leak f_ec * n * h(QBER) with f_ec >= 1. We do NOT implement
+    Cascade/LDPC -- we assume reconciliation succeeds and return the
+    leakage budget needed by privacy amplification.
+
+    Parameters
+    ----------
+    alice_key, bob_key : numpy.ndarray of int
+        Remaining keys after QBER sample removal. Must have equal length.
+    qber : float
+        Estimated QBER.
+    f_ec : float, optional
+        Error-correction inefficiency factor (>= 1). Default 1.16 -- a
+        realistic value for modern Cascade / LDPC implementations.
+
+    Returns
+    -------
+    corrected_key : numpy.ndarray of int
+        Alice's key, taken as the reconciled reference.
+    leaked_bits : float
+        Information revealed during correction, in bits.
+
+    Raises
+    ------
+    ValueError
+        If alice_key and bob_key have different lengths.
+    """
+    if len(alice_key) != len(bob_key):
+        raise ValueError("alice_key and bob_key must have the same length")
+    corrected_key = np.copy(alice_key)
+    leaked_bits = f_ec * len(alice_key) * binary_entropy(qber)
+    return corrected_key, leaked_bits
+
+
