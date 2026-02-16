@@ -101,3 +101,27 @@ def bob_measure(alice_bits, alice_bases, bob_bases, rng=None):
     return results
 
 
+def sift(alice_bits, bob_bits, alice_bases, bob_bases):
+    """Sifting: keep only rounds where Alice and Bob used the same basis.
+
+    Physics: Alice and Bob publicly announce their basis choices (NEVER
+    the bit values). They keep only rounds where bases matched -- on those
+    rounds Bob's measurement was deterministic. Mismatched rounds carry
+    no correlated information and are discarded.
+
+    Parameters
+    ----------
+    alice_bits, bob_bits : numpy.ndarray of int
+        Alice's prepared bits and Bob's measured bits.
+    alice_bases, bob_bases : numpy.ndarray of int
+        Alice's and Bob's basis choices.
+
+    Returns
+    -------
+    alice_sifted, bob_sifted : numpy.ndarray of int
+        Bits where bases matched. Length is approximately N/2.
+    """
+    match = alice_bases == bob_bases
+    return alice_bits[match], bob_bits[match]
+
+
