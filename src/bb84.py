@@ -70,3 +70,34 @@ def alice_prepare(n_bits, rng=None):
     return bits, bases
 
 
+def bob_measure(alice_bits, alice_bases, bob_bases, rng=None):
+    """Bob measures the incoming qubits in his chosen bases.
+
+    Physics: when Bob's basis matches Alice's, projective measurement is
+    deterministic (Bob reads Alice's bit). When bases mismatch, the Born
+    rule gives a uniform 50/50 outcome (e.g. |<+|0>|^2 = 1/2). This is
+    the exact physics, not a simulation approximation.
+
+    Parameters
+    ----------
+    alice_bits : numpy.ndarray of int
+        Alice's prepared bit values.
+    alice_bases : numpy.ndarray of int
+        Alice's basis choices (0 = Z, 1 = X).
+    bob_bases : numpy.ndarray of int
+        Bob's randomly chosen measurement bases.
+    rng : None, int, or numpy.random.Generator
+        Random number generator or seed.
+
+    Returns
+    -------
+    results : numpy.ndarray of int
+        Bob's measurement outcomes (one per round).
+    """
+    rng = _get_rng(rng)
+    results = np.copy(alice_bits)
+    mismatch = alice_bases != bob_bases
+    results[mismatch] = rng.integers(0, 2, mismatch.sum())
+    return results
+
+
