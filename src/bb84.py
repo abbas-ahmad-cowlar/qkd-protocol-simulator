@@ -287,3 +287,34 @@ def eve_intercept_resend(alice_bits, alice_bases, interception_rate=1.0, rng=Non
     return eve_bits, forwarded_bits, forwarded_bases, intercepted
 
 
+def final_key_length(n_remaining, qber, f_ec=1.16):
+    """Final secure key length after privacy amplification.
+
+    Physics: the per-sifted-bit secret-key rate is
+
+        K = 1 - h(QBER) - f_ec * h(QBER)
+
+    where the first h(QBER) bounds Eve's Holevo information for the
+    depolarizing channel, and f_ec * h(QBER) is the error-correction
+    leakage. Final length L = N_remaining * max(0, K).
+
+    The threshold (K = 0) sits at h(E*) = 1 / (1 + f_ec), giving
+    E* ~ 11.0% for f_ec = 1 and E* ~ 9.8% for f_ec = 1.16.
+
+    Parameters
+    ----------
+    n_remaining : int
+        Sifted bits AFTER QBER sample removal (NOT the full sifted key).
+    qber : float
+        Estimated QBER.
+    f_ec : float, optional
+        Error-correction inefficiency factor. Default 1.16.
+
+    Returns
+    -------
+    int
+        Final secure key length in bits. Zero when QBER is above threshold.
+    """
+    h_q = binary_entropy(qber)
+    key_rate = 1.0 - h_q - f_ec * h_q
+    return max(0, int(n_remaining * key_rate))
