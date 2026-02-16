@@ -221,3 +221,58 @@ def error_correction(alice_key, bob_key, qber, f_ec=1.16):
     return corrected_key, leaked_bits
 
 
+def eve_intercept_resend(alice_bits, alice_bases, interception_rate=1.0, rng=None):
+    """Eve performs an intercept-resend attack.
+
+    Physics: Eve intercepts a fraction `interception_rate` of the qubits,
+    measures each in a randomly chosen basis (Z or X), and re-prepares a
+    fresh qubit in her measurement outcome. The Born rule then operates
+    twice -- Eve's wrong-basis measurements give random results, and
+    those random states have only 50% overlap with Bob's correct-basis
+    eigenstates. The two factors of 1/2 yield QBER = 0.25 *
+    interception_rate on sifted bits.
+
+    Parameters
+    ----------
+    alice_bits : numpy.ndarray of int
+        Alice's prepared bit values.
+    alice_bases : numpy.ndarray of int
+        Alice's basis choices (0 = Z, 1 = X).
+    interception_rate : float, optional
+        Fraction of qubits Eve intercepts; must lie in [0, 1]. Default 1.0.
+    rng : None, int, or numpy.random.Generator
+        Random number generator or seed.
+
+    Returns
+    -------
+    eve_bits : numpy.ndarray of int
+        Eve's measurement outcome for every round. Only meaningful where
+        `intercepted` is True; on non-intercepted rounds Eve never measured.
+    forwarded_bits : numpy.ndarray of int
+        Bits Eve sends on to Bob (Eve's outcome on intercepted rounds,
+        Alice's bit otherwise).
+    forwarded_bases : numpy.ndarray of int
+        Bases used to re-prepare each forwarded qubit (Eve's basis on
+        intercepted rounds, Alice's basis otherwise). This is the
+        critical handoff -- if this stayed Alice's basis, no QBER
+        would appear.
+    intercepted : numpy.ndarray of bool
+        True where Eve actually intercepted.
+
+    Raises
+    ------
+    ValueError
+        If `interception_rate` is not in [0, 1].
+    """
+    rng = _get_rng(rng)
+    n = len(alice_bits)
+
+    if not 0.0 <= interception_rate <= 1.0:
+        raise ValueError(
+            f"interception_rate must be in [0, 1], got {interception_rate}"
+        )
+
+    intercepted = rng.random(n) < interception_rate
+    eve_bases = rng.integers(0, 2, n)
+
+    eve_bits = np.copy(alice_bits)
