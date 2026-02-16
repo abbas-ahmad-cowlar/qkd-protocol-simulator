@@ -26,3 +26,20 @@ import numpy as np
 from src.info_theory import binary_entropy
 
 
+def _get_rng(rng=None):
+    """Normalize a seed or Generator into a NumPy Generator.
+
+    Parameters
+    ----------
+    rng : None, int, or numpy.random.Generator
+        - None     : create a new random Generator (non-reproducible)
+        - int      : create default_rng(seed) (reproducible)
+        - Generator: use as-is
+
+    Returns
+    -------
+    numpy.random.Generator
+    """
+    return np.random.default_rng(rng)
+
+
