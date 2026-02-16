@@ -180,3 +180,5 @@ def estimate_qber(alice_sifted, bob_sifted, sample_fraction=0.1, rng=None):
         bob_sifted[~sample_mask],
         sample_indices,
     )
+
+
