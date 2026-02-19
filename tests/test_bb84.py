@@ -35,3 +35,8 @@ from src.info_theory import binary_entropy
 # 0. _get_rng
 # ---------------------------------------------------------------------------
 
+def test_get_rng_none_returns_generator():
+    rng = _get_rng(None)
+    assert isinstance(rng, np.random.Generator)
+
+
