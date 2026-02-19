@@ -106,3 +106,19 @@ def test_bob_measure_mismatch_is_uniform():
     assert abs(np.mean(bob_bits) - 0.5) < 0.01
 
 
+def test_bob_measure_does_not_mutate_inputs():
+    alice_bits = np.array([0, 0, 0, 0, 0])
+    snapshot = alice_bits.copy()
+    bob_measure(
+        alice_bits,
+        np.zeros(5, dtype=int),
+        np.ones(5, dtype=int),
+        rng=42,
+    )
+    assert np.array_equal(alice_bits, snapshot)
+
+
+# ---------------------------------------------------------------------------
+# 3. sift
+# ---------------------------------------------------------------------------
+
