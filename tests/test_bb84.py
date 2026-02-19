@@ -78,3 +78,14 @@ def test_alice_prepare_uniform():
     assert abs(np.mean(bases) - 0.5) < 0.01
 
 
+def test_alice_prepare_reproducible():
+    b1, ba1 = alice_prepare(100, rng=42)
+    b2, ba2 = alice_prepare(100, rng=42)
+    assert np.array_equal(b1, b2)
+    assert np.array_equal(ba1, ba2)
+
+
+# ---------------------------------------------------------------------------
+# 2. bob_measure
+# ---------------------------------------------------------------------------
+
