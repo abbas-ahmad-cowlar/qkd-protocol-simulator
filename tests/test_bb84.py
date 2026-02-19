@@ -60,3 +60,9 @@ def test_get_rng_generator_passthrough():
 # 1. alice_prepare
 # ---------------------------------------------------------------------------
 
+def test_alice_prepare_shapes():
+    bits, bases = alice_prepare(10000, rng=42)
+    assert bits.shape == (10000,)
+    assert bases.shape == (10000,)
+
+
