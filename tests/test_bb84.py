@@ -40,3 +40,9 @@ def test_get_rng_none_returns_generator():
     assert isinstance(rng, np.random.Generator)
 
 
+def test_get_rng_int_seed_reproducible():
+    a = _get_rng(42).integers(0, 100, 10)
+    b = _get_rng(42).integers(0, 100, 10)
+    assert np.array_equal(a, b)
+
+
