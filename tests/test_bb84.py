@@ -66,3 +66,9 @@ def test_alice_prepare_shapes():
     assert bases.shape == (10000,)
 
 
+def test_alice_prepare_binary():
+    bits, bases = alice_prepare(10000, rng=42)
+    assert set(np.unique(bits)).issubset({0, 1})
+    assert set(np.unique(bases)).issubset({0, 1})
+
+
