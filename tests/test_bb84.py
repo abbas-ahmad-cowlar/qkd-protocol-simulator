@@ -46,3 +46,17 @@ def test_get_rng_int_seed_reproducible():
     assert np.array_equal(a, b)
 
 
+def test_get_rng_generator_passthrough():
+    gen = np.random.default_rng(99)
+    out = _get_rng(gen)
+    a = gen.integers(0, 100, 5)
+    b = out.integers(0, 100, 5)
+    # When passing a Generator, default_rng returns it unchanged, so the
+    # two reads should advance the same internal state.
+    assert isinstance(out, np.random.Generator)
+
+
+# ---------------------------------------------------------------------------
+# 1. alice_prepare
+# ---------------------------------------------------------------------------
+
