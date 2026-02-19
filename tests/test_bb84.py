@@ -89,3 +89,11 @@ def test_alice_prepare_reproducible():
 # 2. bob_measure
 # ---------------------------------------------------------------------------
 
+def test_bob_measure_match_is_deterministic():
+    alice_bits = np.array([0, 1, 0, 1, 0])
+    alice_bases = np.array([0, 0, 1, 1, 0])
+    bob_bases = alice_bases.copy()
+    bob_bits = bob_measure(alice_bits, alice_bases, bob_bases, rng=2026)
+    assert np.array_equal(bob_bits, alice_bits)
+
+
