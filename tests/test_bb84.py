@@ -72,3 +72,9 @@ def test_alice_prepare_binary():
     assert set(np.unique(bases)).issubset({0, 1})
 
 
+def test_alice_prepare_uniform():
+    bits, bases = alice_prepare(100000, rng=42)
+    assert abs(np.mean(bits) - 0.5) < 0.01
+    assert abs(np.mean(bases) - 0.5) < 0.01
+
+
