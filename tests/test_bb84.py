@@ -97,3 +97,12 @@ def test_bob_measure_match_is_deterministic():
     assert np.array_equal(bob_bits, alice_bits)
 
 
+def test_bob_measure_mismatch_is_uniform():
+    n = 100000
+    alice_bits = np.zeros(n, dtype=int)
+    alice_bases = np.ones(n, dtype=int)   # Alice always X
+    bob_bases = np.zeros(n, dtype=int)    # Bob always Z -> 100% mismatch
+    bob_bits = bob_measure(alice_bits, alice_bases, bob_bases, rng=99)
+    assert abs(np.mean(bob_bits) - 0.5) < 0.01
+
+
