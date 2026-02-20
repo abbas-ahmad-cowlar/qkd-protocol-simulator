@@ -158,3 +158,14 @@ def test_sift_ideal_channel_is_lossless():
 # 4. estimate_qber
 # ---------------------------------------------------------------------------
 
+def test_estimate_qber_zero_on_ideal_channel():
+    rng = np.random.default_rng(2026)
+    n = 10000
+    a_bits, a_bases = alice_prepare(n, rng=rng)
+    b_bases = rng.integers(0, 2, n)
+    b_bits = bob_measure(a_bits, a_bases, b_bases, rng=rng)
+    a_s, b_s = sift(a_bits, b_bits, a_bases, b_bases)
+    qber, *_ = estimate_qber(a_s, b_s, rng=rng)
+    assert qber == 0.0
+
+
