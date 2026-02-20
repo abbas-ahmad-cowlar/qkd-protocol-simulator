@@ -134,3 +134,13 @@ def test_sift_known_indices():
     assert np.array_equal(b_s, np.array([0, 1, 0, 1]))
 
 
+def test_sift_rate_is_about_half():
+    rng = np.random.default_rng(42)
+    n = 100000
+    a_bits, a_bases = alice_prepare(n, rng=rng)
+    b_bases = rng.integers(0, 2, n)
+    b_bits = bob_measure(a_bits, a_bases, b_bases, rng=rng)
+    a_s, _ = sift(a_bits, b_bits, a_bases, b_bases)
+    assert abs(len(a_s) / n - 0.5) < 0.01
+
+
