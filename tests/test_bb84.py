@@ -194,3 +194,16 @@ def test_estimate_qber_invalid_fraction_raises():
         estimate_qber(np.array([0, 1]), np.array([0, 1]), sample_fraction=1.5)
 
 
+def test_estimate_qber_full_sample():
+    a = np.array([0, 1, 0, 1])
+    b = np.array([0, 0, 0, 1])
+    qber, a_rem, b_rem, idx = estimate_qber(a, b, sample_fraction=1.0, rng=2026)
+    assert qber == 0.25
+    assert len(a_rem) == 0 and len(b_rem) == 0
+    assert len(idx) == 4
+
+
+# ---------------------------------------------------------------------------
+# 5. error_correction
+# ---------------------------------------------------------------------------
+
