@@ -182,3 +182,8 @@ def test_estimate_qber_removes_sample():
     assert len(a_rem) < len(a_s)
 
 
+def test_estimate_qber_empty_key_raises():
+    with pytest.raises(ValueError):
+        estimate_qber(np.array([], dtype=int), np.array([], dtype=int))
+
+
