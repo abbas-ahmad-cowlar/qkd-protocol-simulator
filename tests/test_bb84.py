@@ -187,3 +187,10 @@ def test_estimate_qber_empty_key_raises():
         estimate_qber(np.array([], dtype=int), np.array([], dtype=int))
 
 
+def test_estimate_qber_invalid_fraction_raises():
+    with pytest.raises(ValueError):
+        estimate_qber(np.array([0, 1]), np.array([0, 1]), sample_fraction=0.0)
+    with pytest.raises(ValueError):
+        estimate_qber(np.array([0, 1]), np.array([0, 1]), sample_fraction=1.5)
+
+
