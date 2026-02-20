@@ -169,3 +169,16 @@ def test_estimate_qber_zero_on_ideal_channel():
     assert qber == 0.0
 
 
+def test_estimate_qber_removes_sample():
+    rng = np.random.default_rng(7)
+    n = 10000
+    a_bits, a_bases = alice_prepare(n, rng=rng)
+    b_bases = rng.integers(0, 2, n)
+    b_bits = bob_measure(a_bits, a_bases, b_bases, rng=rng)
+    a_s, b_s = sift(a_bits, b_bits, a_bases, b_bases)
+    _, a_rem, b_rem, idx = estimate_qber(a_s, b_s, sample_fraction=0.1, rng=rng)
+    assert len(a_rem) + len(idx) == len(a_s)
+    assert len(b_rem) == len(a_rem)
+    assert len(a_rem) < len(a_s)
+
+
