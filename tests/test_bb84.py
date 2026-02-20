@@ -207,3 +207,10 @@ def test_estimate_qber_full_sample():
 # 5. error_correction
 # ---------------------------------------------------------------------------
 
+def test_error_correction_zero_qber_zero_leak():
+    key = np.array([0, 1, 0, 1, 0, 1, 0, 1])
+    corrected, leaked = error_correction(key, key, qber=0.0)
+    assert np.array_equal(corrected, key)
+    assert leaked == 0.0
+
+
