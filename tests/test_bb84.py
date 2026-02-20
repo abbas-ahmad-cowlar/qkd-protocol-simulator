@@ -222,3 +222,11 @@ def test_error_correction_leakage_formula():
     assert np.isclose(leaked, expected)
 
 
+def test_error_correction_f_ec_monotonic():
+    n = 1000
+    fake = np.zeros(n, dtype=int)
+    _, leak_ideal = error_correction(fake, fake, qber=0.05, f_ec=1.0)
+    _, leak_real = error_correction(fake, fake, qber=0.05, f_ec=1.16)
+    assert leak_ideal < leak_real
+
+
