@@ -122,3 +122,15 @@ def test_bob_measure_does_not_mutate_inputs():
 # 3. sift
 # ---------------------------------------------------------------------------
 
+def test_sift_known_indices():
+    a_bits = np.array([0, 1, 0, 1, 0, 1])
+    b_bits = np.array([0, 1, 1, 0, 0, 1])
+    a_bases = np.array([0, 0, 1, 1, 0, 1])
+    b_bases = np.array([0, 1, 1, 0, 0, 1])
+    # Matching positions: 0, 2, 4, 5
+    a_s, b_s = sift(a_bits, b_bits, a_bases, b_bases)
+    assert len(a_s) == 4
+    assert np.array_equal(a_s, np.array([0, 0, 0, 1]))
+    assert np.array_equal(b_s, np.array([0, 1, 0, 1]))
+
+
