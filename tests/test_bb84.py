@@ -214,3 +214,11 @@ def test_error_correction_zero_qber_zero_leak():
     assert leaked == 0.0
 
 
+def test_error_correction_leakage_formula():
+    n = 1000
+    fake = np.zeros(n, dtype=int)
+    _, leaked = error_correction(fake, fake, qber=0.11, f_ec=1.16)
+    expected = 1.16 * n * binary_entropy(0.11)
+    assert np.isclose(leaked, expected)
+
+
