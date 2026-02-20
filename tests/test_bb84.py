@@ -144,3 +144,17 @@ def test_sift_rate_is_about_half():
     assert abs(len(a_s) / n - 0.5) < 0.01
 
 
+def test_sift_ideal_channel_is_lossless():
+    rng = np.random.default_rng(2026)
+    n = 50000
+    a_bits, a_bases = alice_prepare(n, rng=rng)
+    b_bases = rng.integers(0, 2, n)
+    b_bits = bob_measure(a_bits, a_bases, b_bases, rng=rng)
+    a_s, b_s = sift(a_bits, b_bits, a_bases, b_bases)
+    assert np.array_equal(a_s, b_s)
+
+
+# ---------------------------------------------------------------------------
+# 4. estimate_qber
+# ---------------------------------------------------------------------------
+
