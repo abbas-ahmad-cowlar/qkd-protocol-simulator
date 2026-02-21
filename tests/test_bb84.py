@@ -280,3 +280,30 @@ def test_final_key_length_above_threshold_zero():
 # 7. End-to-end pipeline (Step 2.6 integration test)
 # ---------------------------------------------------------------------------
 
+def test_full_pipeline_ideal_channel():
+    rng = np.random.default_rng(2026)
+    N = 100_000
+
+    a_bits, a_bases = alice_prepare(N, rng=rng)
+    b_bases = rng.integers(0, 2, N)
+    b_bits = bob_measure(a_bits, a_bases, b_bases, rng=rng)
+    a_s, b_s = sift(a_bits, b_bits, a_bases, b_bases)
+    qber, a_rem, b_rem, _ = estimate_qber(a_s, b_s, sample_fraction=0.1, rng=rng)
+    corrected, leaked = error_correction(a_rem, b_rem, qber)
+    L = final_key_length(len(a_rem), qber)
+
+    sift_rate = len(a_s) / N
+    final_fraction = L / N
+
+    assert abs(sift_rate - 0.5) < 0.01
+    assert qber == 0.0
+    assert leaked == 0.0
+    assert L == len(a_rem)
+    assert np.array_equal(corrected, b_rem)
+    assert 0.35 < final_fraction < 0.55
+
+
+# ---------------------------------------------------------------------------
+# 8. eve_intercept_resend (Phase 3)
+# ---------------------------------------------------------------------------
+
