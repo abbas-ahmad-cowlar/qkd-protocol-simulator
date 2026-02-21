@@ -239,3 +239,11 @@ def test_error_correction_length_mismatch_raises():
 # 6. final_key_length
 # ---------------------------------------------------------------------------
 
+def _bb84_threshold(f_ec):
+    return brentq(
+        lambda e: 1.0 - binary_entropy(e) - f_ec * binary_entropy(e),
+        1e-12,
+        0.5 - 1e-12,
+    )
+
+
