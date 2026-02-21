@@ -307,3 +307,18 @@ def test_full_pipeline_ideal_channel():
 # 8. eve_intercept_resend (Phase 3)
 # ---------------------------------------------------------------------------
 
+def _run_with_eve(N, interception_rate, seed):
+    """Run the BB84 pipeline against Eve's intercept-resend; return QBER and the
+    `intercepted` mask."""
+    rng = np.random.default_rng(seed)
+    a_bits, a_bases = alice_prepare(N, rng=rng)
+    eve_bits, fwd_bits, fwd_bases, intercepted = eve_intercept_resend(
+        a_bits, a_bases, interception_rate=interception_rate, rng=rng
+    )
+    b_bases = rng.integers(0, 2, N)
+    b_bits = bob_measure(fwd_bits, fwd_bases, b_bases, rng=rng)
+    a_sifted, b_sifted = sift(a_bits, b_bits, a_bases, b_bases)
+    qber = float(np.mean(a_sifted != b_sifted)) if len(a_sifted) > 0 else 0.0
+    return qber, intercepted, (a_bits, a_bases, eve_bits, fwd_bits, fwd_bases, b_bases, b_bits)
+
+
