@@ -263,3 +263,12 @@ def test_final_key_length_threshold_f_ec_116():
     assert final_key_length(100000, qber=0.09, f_ec=1.16) > 0
 
 
+def test_final_key_length_explicit_value():
+    n = 1000
+    qber = 0.05
+    f_ec = 1.16
+    h = binary_entropy(qber)
+    expected = int(n * (1.0 - h - f_ec * h))
+    assert final_key_length(n, qber=qber, f_ec=f_ec) == expected
+
+
