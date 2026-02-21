@@ -247,3 +247,7 @@ def _bb84_threshold(f_ec):
     )
 
 
+def test_final_key_length_qber_zero_returns_full():
+    assert final_key_length(1000, qber=0.0, f_ec=1.16) == 1000
+
+
