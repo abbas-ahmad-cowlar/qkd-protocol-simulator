@@ -258,3 +258,8 @@ def test_final_key_length_threshold_f_ec_1():
     assert final_key_length(100000, qber=threshold - 1e-4, f_ec=1.0) > 0
 
 
+def test_final_key_length_threshold_f_ec_116():
+    assert final_key_length(100000, qber=0.10, f_ec=1.16) == 0
+    assert final_key_length(100000, qber=0.09, f_ec=1.16) > 0
+
+
