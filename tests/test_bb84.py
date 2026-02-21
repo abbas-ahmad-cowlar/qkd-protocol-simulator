@@ -328,3 +328,9 @@ def test_eve_full_interception_qber_is_25pct():
     assert intc.all()
 
 
+def test_eve_no_interception_qber_zero():
+    qber, intc, _ = _run_with_eve(100_000, 0.0, seed=2026)
+    assert qber == 0.0
+    assert intc.sum() == 0
+
+
