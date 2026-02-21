@@ -230,3 +230,12 @@ def test_error_correction_f_ec_monotonic():
     assert leak_ideal < leak_real
 
 
+def test_error_correction_length_mismatch_raises():
+    with pytest.raises(ValueError):
+        error_correction(np.array([0, 1]), np.array([0, 1, 0]), qber=0.0)
+
+
+# ---------------------------------------------------------------------------
+# 6. final_key_length
+# ---------------------------------------------------------------------------
+
