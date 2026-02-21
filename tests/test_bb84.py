@@ -272,3 +272,11 @@ def test_final_key_length_explicit_value():
     assert final_key_length(n, qber=qber, f_ec=f_ec) == expected
 
 
+def test_final_key_length_above_threshold_zero():
+    assert final_key_length(1000, qber=0.5, f_ec=1.16) == 0
+
+
+# ---------------------------------------------------------------------------
+# 7. End-to-end pipeline (Step 2.6 integration test)
+# ---------------------------------------------------------------------------
+
