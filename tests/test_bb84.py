@@ -322,3 +322,9 @@ def _run_with_eve(N, interception_rate, seed):
     return qber, intercepted, (a_bits, a_bases, eve_bits, fwd_bits, fwd_bases, b_bases, b_bits)
 
 
+def test_eve_full_interception_qber_is_25pct():
+    qber, intc, _ = _run_with_eve(100_000, 1.0, seed=2026)
+    assert abs(qber - 0.25) < 0.01
+    assert intc.all()
+
+
