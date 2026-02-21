@@ -251,3 +251,10 @@ def test_final_key_length_qber_zero_returns_full():
     assert final_key_length(1000, qber=0.0, f_ec=1.16) == 1000
 
 
+def test_final_key_length_threshold_f_ec_1():
+    threshold = _bb84_threshold(1.0)
+    assert np.isclose(threshold, 0.1100278644, atol=1e-6)
+    assert final_key_length(100000, qber=threshold + 1e-4, f_ec=1.0) == 0
+    assert final_key_length(100000, qber=threshold - 1e-4, f_ec=1.0) > 0
+
+
