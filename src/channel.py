@@ -32,3 +32,30 @@ def _maybe_scalar(x, original):
     return float(x) if np.ndim(original) == 0 else x
 
 
+def fiber_transmittance(L, alpha_dB=0.2):
+    """Fiber transmittance as a function of distance.
+
+    Physics: ``eta(L) = 10**(-alpha_dB * L / 10)``. At 1550 nm the
+    telecom C-band minimum sits at ``alpha_dB ~ 0.2``.
+
+    Parameters
+    ----------
+    L : float or numpy.ndarray
+        Fiber length in km. Must be non-negative.
+    alpha_dB : float, optional
+        Attenuation coefficient in dB/km (>= 0). Default 0.2.
+
+    Returns
+    -------
+    float or numpy.ndarray
+        Transmittance in (0, 1].
+    """
+    L_arr = np.asarray(L, dtype=float)
+    if np.any(L_arr < 0.0):
+        raise ValueError("Fiber length L must be nonnegative")
+    if alpha_dB < 0.0:
+        raise ValueError("alpha_dB must be nonnegative")
+    eta = 10.0 ** (-alpha_dB * L_arr / 10.0)
+    return _maybe_scalar(eta, L)
+
+
