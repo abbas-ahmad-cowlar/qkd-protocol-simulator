@@ -334,3 +334,8 @@ def test_eve_no_interception_qber_zero():
     assert intc.sum() == 0
 
 
+def test_eve_partial_10pct_qber_linear():
+    qber, _, _ = _run_with_eve(100_000, 0.1, seed=2026)
+    assert abs(qber - 0.025) < 0.01
+
+
