@@ -344,3 +344,8 @@ def test_eve_partial_50pct_qber_linear():
     assert abs(qber - 0.125) < 0.015
 
 
+def test_eve_intercepted_fraction_matches_rate():
+    _, intc, _ = _run_with_eve(100_000, 0.3, seed=42)
+    assert abs(intc.mean() - 0.3) < 0.01
+
+
