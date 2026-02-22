@@ -27,3 +27,8 @@ import numpy as np
 from src.info_theory import binary_entropy
 
 
+def _maybe_scalar(x, original):
+    """Return a Python float when the original input was scalar."""
+    return float(x) if np.ndim(original) == 0 else x
+
+
