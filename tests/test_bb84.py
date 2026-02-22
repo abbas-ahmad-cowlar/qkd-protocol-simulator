@@ -339,3 +339,8 @@ def test_eve_partial_10pct_qber_linear():
     assert abs(qber - 0.025) < 0.01
 
 
+def test_eve_partial_50pct_qber_linear():
+    qber, _, _ = _run_with_eve(100_000, 0.5, seed=2026)
+    assert abs(qber - 0.125) < 0.015
+
+
