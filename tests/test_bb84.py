@@ -355,3 +355,10 @@ def test_eve_reproducible():
     assert q1 == q2
 
 
+def test_eve_invalid_rate_raises():
+    with pytest.raises(ValueError):
+        eve_intercept_resend(np.array([0, 1]), np.array([0, 0]), interception_rate=1.5)
+    with pytest.raises(ValueError):
+        eve_intercept_resend(np.array([0, 1]), np.array([0, 0]), interception_rate=-0.1)
+
+
