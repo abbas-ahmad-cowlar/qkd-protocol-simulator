@@ -362,3 +362,13 @@ def test_eve_invalid_rate_raises():
         eve_intercept_resend(np.array([0, 1]), np.array([0, 0]), interception_rate=-0.1)
 
 
+def test_eve_does_not_mutate_alice_inputs():
+    rng = np.random.default_rng(7)
+    a_bits, a_bases = alice_prepare(1000, rng=rng)
+    snapshot_bits = a_bits.copy()
+    snapshot_bases = a_bases.copy()
+    eve_intercept_resend(a_bits, a_bases, interception_rate=1.0, rng=rng)
+    assert np.array_equal(a_bits, snapshot_bits)
+    assert np.array_equal(a_bases, snapshot_bases)
+
+
