@@ -372,3 +372,15 @@ def test_eve_does_not_mutate_alice_inputs():
     assert np.array_equal(a_bases, snapshot_bases)
 
 
+def test_eve_accuracy_intercepted_sifted_is_75pct():
+    """On rounds Eve intercepted AND that survived sifting, Eve's bit is
+    correct ~75% of the time (50% correct basis + 25% lucky)."""
+    _, _, payload = _run_with_eve(100_000, 1.0, seed=2026)
+    a_bits, a_bases, eve_bits, _, _, b_bases, _ = payload
+    sifted_mask = a_bases == b_bases
+    eve_correct = float(np.mean(eve_bits[sifted_mask] == a_bits[sifted_mask]))
+    assert abs(eve_correct - 0.75) < 0.01
+
+
+if __name__ == "__main__":
+    sys.exit(pytest.main([__file__, "-v"]))
