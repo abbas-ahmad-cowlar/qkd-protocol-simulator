@@ -349,3 +349,9 @@ def test_eve_intercepted_fraction_matches_rate():
     assert abs(intc.mean() - 0.3) < 0.01
 
 
+def test_eve_reproducible():
+    q1, _, _ = _run_with_eve(20_000, 0.5, seed=42)
+    q2, _, _ = _run_with_eve(20_000, 0.5, seed=42)
+    assert q1 == q2
+
+
