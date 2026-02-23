@@ -236,3 +236,28 @@ def decoy_bb84_key_rate(L, mu=0.5, eta_det=0.2, p_dark=1e-6,
 
     Y0 = 2.0 * p_dark
     Y1 = 1.0 - (1.0 - Y0) * (1.0 - eta_total)
+    Q1 = mu * np.exp(-mu) * Y1
+
+    Y1_arr = np.asarray(Y1, dtype=float)
+    e1_num = e_det * eta_total + 0.5 * Y0
+    e1 = np.divide(
+        e1_num * np.ones_like(Y1_arr),
+        Y1_arr,
+        out=np.full_like(Y1_arr, 0.5, dtype=float),
+        where=Y1_arr > 0.0,
+    )
+
+    Q_mu = 1.0 - np.exp(-eta_total * mu) + Y0
+    Q_mu_arr = np.asarray(Q_mu, dtype=float)
+    E_mu_num = e_det * (1.0 - np.exp(-eta_total * mu)) + 0.5 * Y0
+    E_mu = np.divide(
+        E_mu_num * np.ones_like(Q_mu_arr),
+        Q_mu_arr,
+        out=np.full_like(Q_mu_arr, 0.5, dtype=float),
+        where=Q_mu_arr > 0.0,
+    )
+
+    bracket = Q1 * (1.0 - binary_entropy(e1)) - Q_mu * f_ec * binary_entropy(E_mu)
+    rate = 0.5 * np.maximum(0.0, bracket)
+    rate = np.where((Y1_arr > 0.0) & (Q_mu_arr > 0.0), rate, 0.0)
+    return _maybe_scalar(rate, L)
