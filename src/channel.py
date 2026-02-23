@@ -107,3 +107,49 @@ def total_detection_prob(L, mu=0.1, eta_det=0.2, p_dark=1e-6, alpha_dB=0.2):
     return signal + 2.0 * p_dark
 
 
+def qber_channel(L, mu=0.1, eta_det=0.2, p_dark=1e-6, alpha_dB=0.2, e_det=0.0):
+    """Channel QBER from dark counts and optical misalignment.
+
+    Physics: ``QBER = (e_det * signal + p_dark) / gain``. The QBER
+    numerator uses ``p_dark`` (not ``2 * p_dark``) because only one of
+    the two detectors fires per dark event and it is random which.
+
+    The ``e_det * signal`` term captures intrinsic optical and detector
+    misalignment errors -- nonzero for real systems, default 0 here so
+    the unattacked channel produces the textbook ``QBER -> 0`` at short
+    distance and ``QBER -> 0.5`` at long distance.
+
+    The ``where=`` clause guards the ``mu = eta_det = p_dark = 0`` edge
+    case: when the gain is exactly zero, no bits are detected at all
+    and we return the random-error limit 0.5 so downstream key-rate
+    formulas clamp to zero.
+
+    Parameters
+    ----------
+    L : float or numpy.ndarray
+        Fiber length in km.
+    mu, eta_det, p_dark, alpha_dB : floats
+        Channel and source parameters.
+    e_det : float, optional
+        Intrinsic optical / detector misalignment error rate. Default 0.0.
+
+    Returns
+    -------
+    float or numpy.ndarray
+        QBER in [0, 0.5].
+    """
+    signal = bb84_signal_prob(L, mu, eta_det, alpha_dB)
+    gain = signal + 2.0 * p_dark
+    numerator = e_det * signal + p_dark
+
+    gain_arr = np.asarray(gain, dtype=float)
+    num_arr = np.asarray(numerator, dtype=float) * np.ones_like(gain_arr)
+    qber = np.divide(
+        num_arr,
+        gain_arr,
+        out=np.full_like(gain_arr, 0.5, dtype=float),
+        where=gain_arr > 0.0,
+    )
+    return _maybe_scalar(qber, L)
+
+
