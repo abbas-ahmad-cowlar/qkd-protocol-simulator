@@ -59,3 +59,29 @@ def fiber_transmittance(L, alpha_dB=0.2):
     return _maybe_scalar(eta, L)
 
 
+def bb84_signal_prob(L, mu=0.1, eta_det=0.2, alpha_dB=0.2):
+    """Signal detection probability: photon arrives AND is detected.
+
+    Physics: ``signal = eta_ch(L) * eta_det * mu``. This is the SINGLE
+    SOURCE OF TRUTH for the signal probability used downstream.
+
+    Parameters
+    ----------
+    L : float or numpy.ndarray
+        Fiber length in km.
+    mu : float, optional
+        Mean photon number per pulse. Default 0.1.
+    eta_det : float, optional
+        Detector quantum efficiency. Default 0.2.
+    alpha_dB : float, optional
+        Fiber attenuation in dB/km. Default 0.2.
+
+    Returns
+    -------
+    float or numpy.ndarray
+        Signal detection probability (dimensionless).
+    """
+    eta_ch = fiber_transmittance(L, alpha_dB)
+    return eta_ch * eta_det * mu
+
+
