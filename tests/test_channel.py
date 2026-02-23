@@ -31,3 +31,7 @@ from src.channel import (
 # fiber_transmittance
 # ---------------------------------------------------------------------------
 
+def test_transmittance_zero():
+    assert fiber_transmittance(0) == 1.0
+
+
