@@ -153,3 +153,31 @@ def qber_channel(L, mu=0.1, eta_det=0.2, p_dark=1e-6, alpha_dB=0.2, e_det=0.0):
     return _maybe_scalar(qber, L)
 
 
+def bb84_key_rate(L, mu=0.1, eta_det=0.2, p_dark=1e-6, f_ec=1.16,
+                  alpha_dB=0.2, e_det=0.0):
+    """Per-pulse secure-key rate for BB84 with the realistic channel.
+
+    Physics: ``K = q * Q * max(0, 1 - h(QBER) - f_ec * h(QBER))`` with
+    sifting factor ``q = 1/2``. Use ``np.maximum`` so the
+    clamp survives vectorised distance sweeps.
+
+    Parameters
+    ----------
+    L : float or numpy.ndarray
+        Fiber length in km.
+    mu, eta_det, p_dark, alpha_dB, e_det : floats
+        Channel and source parameters.
+    f_ec : float, optional
+        Error-correction inefficiency factor (>= 1). Default 1.16.
+
+    Returns
+    -------
+    float or numpy.ndarray
+        Per-pulse key rate (bits / pulse). Always non-negative.
+    """
+    gain = total_detection_prob(L, mu, eta_det, p_dark, alpha_dB)
+    qber = qber_channel(L, mu, eta_det, p_dark, alpha_dB, e_det)
+    bracket = 1.0 - binary_entropy(qber) - f_ec * binary_entropy(qber)
+    return np.maximum(0.0, 0.5 * gain * bracket)
+
+
