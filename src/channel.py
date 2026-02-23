@@ -181,3 +181,58 @@ def bb84_key_rate(L, mu=0.1, eta_det=0.2, p_dark=1e-6, f_ec=1.16,
     return np.maximum(0.0, 0.5 * gain * bracket)
 
 
+def decoy_bb84_key_rate(L, mu=0.5, eta_det=0.2, p_dark=1e-6,
+                        e_det=0.015, f_ec=1.16, alpha_dB=0.2):
+    """Simplified asymptotic decoy-state BB84 per-pulse key rate.
+
+    Physics: weak-coherent sources are vulnerable to PNS attacks
+    because multi-photon pulses leak information silently. Decoy
+    states (Lo, Ma & Chen, 2005) detect PNS by varying the pulse
+    intensity; in the asymptotic limit the recoverable secret-key rate
+    is
+
+        K = q * max(0, Q1 * (1 - h(e1)) - Q_mu * f_ec * h(E_mu))
+
+    where ``Q1, e1`` are the single-photon gain and error rate
+    estimated from the decoy statistics, and ``Q_mu, E_mu`` are the
+    overall gain and QBER at the signal intensity.
+
+    The yields used here:
+
+        Y0 = 2 * p_dark                      (vacuum, two detectors)
+        Y1 = 1 - (1 - Y0) * (1 - eta_total)  (single-photon yield)
+        Q1 = mu * exp(-mu) * Y1              (Poisson n=1 weight)
+        e1 = (e_det * eta_total + 0.5 * Y0) / Y1
+        Q_mu = 1 - exp(-eta_total * mu) + Y0
+        E_mu = (e_det * (1 - exp(-eta_total * mu)) + 0.5 * Y0) / Q_mu
+
+    Modeling caveat: this is a simplified asymptotic estimate. It assumes
+    infinite decoy statistics and asymptotic key length; finite-key
+    corrections are out of scope.
+
+    Parameters
+    ----------
+    L : float or numpy.ndarray
+        Fiber length in km.
+    mu : float, optional
+        Signal-pulse mean photon number. Default 0.5.
+    eta_det : float, optional
+        Detector quantum efficiency. Default 0.2.
+    p_dark : float, optional
+        Per-detector dark-count probability. Default 1e-6.
+    e_det : float, optional
+        Intrinsic optical / detector misalignment error rate. Default 0.015.
+    f_ec : float, optional
+        Error-correction inefficiency factor. Default 1.16.
+    alpha_dB : float, optional
+        Fiber attenuation in dB/km. Default 0.2.
+
+    Returns
+    -------
+    float or numpy.ndarray
+        Per-pulse decoy-state key rate (bits / pulse). Always >= 0.
+    """
+    eta_total = fiber_transmittance(L, alpha_dB) * eta_det
+
+    Y0 = 2.0 * p_dark
+    Y1 = 1.0 - (1.0 - Y0) * (1.0 - eta_total)
