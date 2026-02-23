@@ -85,3 +85,25 @@ def bb84_signal_prob(L, mu=0.1, eta_det=0.2, alpha_dB=0.2):
     return eta_ch * eta_det * mu
 
 
+def total_detection_prob(L, mu=0.1, eta_det=0.2, p_dark=1e-6, alpha_dB=0.2):
+    """Per-pulse gain: probability Bob registers any click at all.
+
+    Physics: ``Q = signal + 2 * p_dark``. Two detectors each fire dark
+    counts with probability ``p_dark``.
+
+    Parameters
+    ----------
+    L : float or numpy.ndarray
+        Fiber length in km.
+    mu, eta_det, p_dark, alpha_dB : floats
+        Channel and source parameters.
+
+    Returns
+    -------
+    float or numpy.ndarray
+        Detection gain Q.
+    """
+    signal = bb84_signal_prob(L, mu, eta_det, alpha_dB)
+    return signal + 2.0 * p_dark
+
+
