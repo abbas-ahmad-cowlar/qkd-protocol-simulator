@@ -35,3 +35,7 @@ def test_transmittance_zero():
     assert fiber_transmittance(0) == 1.0
 
 
+def test_transmittance_50km():
+    assert np.isclose(fiber_transmittance(50), 0.1, rtol=1e-9)
+
+
