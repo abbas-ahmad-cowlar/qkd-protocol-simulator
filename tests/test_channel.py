@@ -92,3 +92,12 @@ def test_total_detection_short():
     assert np.isclose(gain, 0.020002, rtol=1e-4)
 
 
+def test_total_detection_long():
+    gain = total_detection_prob(300)
+    assert np.isclose(gain, 2e-6, rtol=0.01)
+
+
+# ---------------------------------------------------------------------------
+# qber_channel
+# ---------------------------------------------------------------------------
+
