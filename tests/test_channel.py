@@ -67,3 +67,7 @@ def test_transmittance_scalar_returns_float():
 # bb84_signal_prob
 # ---------------------------------------------------------------------------
 
+def test_signal_prob_zero():
+    assert np.isclose(bb84_signal_prob(0), 0.02)
+
+
