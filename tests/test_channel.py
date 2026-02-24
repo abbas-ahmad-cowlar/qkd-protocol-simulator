@@ -106,3 +106,8 @@ def test_qber_short_negligible():
     assert q < 1e-3
 
 
+def test_qber_long_approaches_half():
+    q = qber_channel(300)
+    assert abs(q - 0.5) < 0.01
+
+
