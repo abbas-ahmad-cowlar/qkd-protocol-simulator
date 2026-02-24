@@ -53,3 +53,9 @@ def test_transmittance_rejects_negative_alpha():
         fiber_transmittance(10, alpha_dB=-0.2)
 
 
+def test_transmittance_vectorized():
+    L = np.array([0, 50, 100, 150])
+    eta = fiber_transmittance(L)
+    np.testing.assert_allclose(eta, [1.0, 0.1, 0.01, 1e-3], rtol=1e-9)
+
+
