@@ -75,3 +75,15 @@ def test_signal_prob_50km():
     assert np.isclose(bb84_signal_prob(50), 0.002, rtol=1e-9)
 
 
+def test_signal_prob_vectorized():
+    L = np.linspace(0, 100, 11)
+    s = bb84_signal_prob(L)
+    assert s.shape == L.shape
+    assert np.all(np.isfinite(s))
+    assert s[0] > s[-1]
+
+
+# ---------------------------------------------------------------------------
+# total_detection_prob
+# ---------------------------------------------------------------------------
+
