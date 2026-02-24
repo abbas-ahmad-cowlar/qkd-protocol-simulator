@@ -101,3 +101,8 @@ def test_total_detection_long():
 # qber_channel
 # ---------------------------------------------------------------------------
 
+def test_qber_short_negligible():
+    q = qber_channel(0)
+    assert q < 1e-3
+
+
