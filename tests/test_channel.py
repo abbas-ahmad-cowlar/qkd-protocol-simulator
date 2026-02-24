@@ -43,3 +43,8 @@ def test_transmittance_100km():
     assert np.isclose(fiber_transmittance(100), 0.01, rtol=1e-9)
 
 
+def test_transmittance_rejects_negative_distance():
+    with pytest.raises(ValueError):
+        fiber_transmittance(-1)
+
+
