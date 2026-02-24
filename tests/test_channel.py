@@ -59,3 +59,11 @@ def test_transmittance_vectorized():
     np.testing.assert_allclose(eta, [1.0, 0.1, 0.01, 1e-3], rtol=1e-9)
 
 
+def test_transmittance_scalar_returns_float():
+    assert isinstance(fiber_transmittance(50.0), float)
+
+
+# ---------------------------------------------------------------------------
+# bb84_signal_prob
+# ---------------------------------------------------------------------------
+
