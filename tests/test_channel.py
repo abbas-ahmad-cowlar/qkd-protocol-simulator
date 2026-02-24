@@ -71,3 +71,7 @@ def test_signal_prob_zero():
     assert np.isclose(bb84_signal_prob(0), 0.02)
 
 
+def test_signal_prob_50km():
+    assert np.isclose(bb84_signal_prob(50), 0.002, rtol=1e-9)
+
+
