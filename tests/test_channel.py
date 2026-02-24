@@ -48,3 +48,8 @@ def test_transmittance_rejects_negative_distance():
         fiber_transmittance(-1)
 
 
+def test_transmittance_rejects_negative_alpha():
+    with pytest.raises(ValueError):
+        fiber_transmittance(10, alpha_dB=-0.2)
+
+
