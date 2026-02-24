@@ -87,3 +87,8 @@ def test_signal_prob_vectorized():
 # total_detection_prob
 # ---------------------------------------------------------------------------
 
+def test_total_detection_short():
+    gain = total_detection_prob(0)
+    assert np.isclose(gain, 0.020002, rtol=1e-4)
+
+
