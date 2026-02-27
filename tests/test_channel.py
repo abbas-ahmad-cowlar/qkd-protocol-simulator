@@ -155,3 +155,17 @@ def test_key_rate_sweep_finite_nonneg():
     assert rates[-1] == 0
 
 
+def test_key_rate_cutoff_within_expected_range():
+    """Standard parameters: cutoff should lie between 100 and 230 km."""
+    L = np.linspace(0, 300, 1001)
+    rates = bb84_key_rate(L)
+    positive = rates > 0
+    cutoff_idx = np.where(~positive)[0][0]
+    L_max = float(L[cutoff_idx - 1])
+    assert 100.0 < L_max < 230.0, f"Expected ~150-200 km, got {L_max}"
+
+
+# ---------------------------------------------------------------------------
+# decoy_bb84_key_rate
+# ---------------------------------------------------------------------------
+
