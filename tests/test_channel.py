@@ -173,3 +173,7 @@ def test_decoy_key_rate_short_positive():
     assert decoy_bb84_key_rate(0) > 0.0
 
 
+def test_decoy_key_rate_long_zero():
+    assert decoy_bb84_key_rate(300) == 0.0
+
+
