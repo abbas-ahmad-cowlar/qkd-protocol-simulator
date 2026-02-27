@@ -133,3 +133,7 @@ def test_qber_vectorized_no_nan():
 # bb84_key_rate
 # ---------------------------------------------------------------------------
 
+def test_key_rate_short_positive():
+    assert bb84_key_rate(0) > 0.0
+
+
