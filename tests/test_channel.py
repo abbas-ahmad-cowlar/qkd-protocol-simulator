@@ -116,3 +116,8 @@ def test_qber_zero_gain_returns_half():
     assert q == 0.5
 
 
+def test_qber_misalignment_dominates_at_short_L():
+    q = qber_channel(0, e_det=0.01)
+    assert abs(q - 0.01) < 1e-3
+
+
