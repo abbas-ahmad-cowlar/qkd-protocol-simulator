@@ -141,3 +141,7 @@ def test_key_rate_long_zero():
     assert bb84_key_rate(300) == 0.0
 
 
+def test_key_rate_zero_gain_zero():
+    assert bb84_key_rate(0, mu=0.0, eta_det=0.0, p_dark=0.0) == 0.0
+
+
