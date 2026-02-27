@@ -169,3 +169,7 @@ def test_key_rate_cutoff_within_expected_range():
 # decoy_bb84_key_rate
 # ---------------------------------------------------------------------------
 
+def test_decoy_key_rate_short_positive():
+    assert decoy_bb84_key_rate(0) > 0.0
+
+
