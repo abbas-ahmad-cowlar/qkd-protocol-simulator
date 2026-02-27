@@ -121,3 +121,15 @@ def test_qber_misalignment_dominates_at_short_L():
     assert abs(q - 0.01) < 1e-3
 
 
+def test_qber_vectorized_no_nan():
+    L = np.linspace(0, 300, 301)
+    q = qber_channel(L)
+    assert q.shape == L.shape
+    assert np.all(np.isfinite(q))
+    assert np.all((q >= 0.0) & (q <= 0.5 + 1e-12))
+
+
+# ---------------------------------------------------------------------------
+# bb84_key_rate
+# ---------------------------------------------------------------------------
+
