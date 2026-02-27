@@ -111,3 +111,8 @@ def test_qber_long_approaches_half():
     assert abs(q - 0.5) < 0.01
 
 
+def test_qber_zero_gain_returns_half():
+    q = qber_channel(0, mu=0.0, eta_det=0.0, p_dark=0.0)
+    assert q == 0.5
+
+
