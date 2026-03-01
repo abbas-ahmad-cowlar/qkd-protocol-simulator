@@ -188,3 +188,58 @@ def build_notebook() -> nbf.NotebookNode:
         "qber, alice_key, bob_key, sample_idx = estimate_qber(\n"
         "    alice_sifted, bob_sifted, sample_fraction=0.1, rng=rng\n"
         ")\n"
+        "\n"
+        "corrected_key, leaked_bits = error_correction(alice_key, bob_key, qber, f_ec=F_EC)\n"
+        "L_final = final_key_length(len(alice_key), qber, f_ec=F_EC)\n"
+        "\n"
+        "print('=' * 56)\n"
+        "print('BB84 simulation (ideal channel, no Eve)')\n"
+        "print('=' * 56)\n"
+        "print(f'Total bits sent              : {N_TOTAL:>10,}')\n"
+        "print(f'Sifted key length            : {len(alice_sifted):>10,} '\n"
+        "      f'({len(alice_sifted) / N_TOTAL:.1%})')\n"
+        "print(f'QBER sample size (10%)       : {len(sample_idx):>10,}')\n"
+        "print(f'Estimated QBER               : {qber:>10.6f}')\n"
+        "print(f'Remaining key (post-sample)  : {len(alice_key):>10,}')\n"
+        "print(f'EC leakage (f_ec={F_EC})       : {leaked_bits:>10.4f} bits')\n"
+        "print(f'Final secure key length      : {L_final:>10,}')\n"
+        "print(f'Final key fraction / pulse   : {L_final / N_TOTAL:>10.4f}')\n"
+        "print(f'Alice == Bob (post-correction): {bool(np.array_equal(corrected_key, bob_key))}')\n"
+        "print('=' * 56)\n"
+    ))
+
+    cells.append(md(
+        "### Sanity checks\n"
+        "\n"
+        "On an ideal channel the simulation must satisfy: sift rate "
+        "$\\approx 50\\%$, $\\mathrm{QBER}=0$, EC leakage $=0$, and "
+        "$L_{\\text{final}}=N_{\\text{remaining}}$."
+    ))
+
+    cells.append(code(
+        "assert abs(len(alice_sifted) / N_TOTAL - 0.5) < 0.05\n"
+        "assert qber == 0.0\n"
+        "assert leaked_bits == 0.0\n"
+        "assert L_final == len(alice_key)\n"
+        "assert np.array_equal(corrected_key, bob_key)\n"
+        "print('All sanity checks passed.')\n"
+    ))
+
+    cells.append(md(
+        "## 4. Figure 1 &mdash; basis-agreement matrix\n"
+        "\n"
+        "The four cells of the (Alice basis, Bob basis) contingency table "
+        "should be roughly equal at $N/4$. Diagonal cells are kept; "
+        "off-diagonal cells are discarded during sifting."
+    ))
+
+    cells.append(code(
+        "matrix = np.zeros((2, 2), dtype=int)\n"
+        "for i in range(2):\n"
+        "    for j in range(2):\n"
+        "        matrix[i, j] = int(np.sum((alice_bases == i) & (bob_bases == j)))\n"
+        "\n"
+        "fig, ax = plt.subplots(figsize=(6, 5))\n"
+        "im = ax.imshow(matrix, cmap='Blues')\n"
+        "for i in range(2):\n"
+        "    for j in range(2):\n"
