@@ -15,3 +15,7 @@ import nbformat as nbf
 NB_PATH = Path(__file__).resolve().parent / "01_bb84_protocol.ipynb"
 
 
+def md(text: str) -> nbf.NotebookNode:
+    return nbf.v4.new_markdown_cell(text)
+
+
