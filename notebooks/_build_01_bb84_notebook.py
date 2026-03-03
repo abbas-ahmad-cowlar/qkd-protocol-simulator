@@ -353,3 +353,28 @@ def build_notebook() -> nbf.NotebookNode:
         "## 8. What this notebook demonstrates\n"
         "\n"
         "1. **BB84 works.** With matching bases the keys are bit-for-bit "
+        "identical; QBER $=0$ on the ideal channel.\n"
+        "2. **Sifting discards $\\sim 50\\%$.** Independent basis choice "
+        "yields $P(\\text{match}) = 1/2$.\n"
+        "3. **The QBER sample is removed.** $N_{\\text{remaining}} + "
+        "N_{\\text{sample}} = N_{\\text{sifted}}$.\n"
+        "4. **Classical simulation is faithful.** The Born rule gives "
+        "exactly 50/50 on basis mismatch, which is what `bob_measure` "
+        "encodes.\n"
+        "5. **Key-rate curves expose the threshold.** With $f_{ec} = 1$ the "
+        "rate vanishes near $E^* \\approx 11\\%$; with $f_{ec} = 1.16$ it "
+        "drops to $\\sim 9.8\\%$. Notebook 02 will push QBER up by adding Eve."
+    ))
+
+    nb.cells = cells
+    nb.metadata = {
+        "kernelspec": {
+            "display_name": "Python 3",
+            "language": "python",
+            "name": "python3",
+        },
+        "language_info": {"name": "python"},
+    }
+    return nb
+
+
