@@ -463,3 +463,56 @@ def build_notebook() -> nbf.NotebookNode:
         "    f'{\"~0\":>10}{\"overclaimed\":>14}{\"No (QBER)\":>14}'\n"
         "    f'{\"Decoy states\":>22}'\n"
         ")\n"
+    ))
+
+    cells.append(md(
+        "### Key takeaways\n"
+        "\n"
+        "1. **Intercept-resend is detectable.** Even partial interception "
+        "raises QBER above background, and at full interception the QBER "
+        "(25%) is more than double the abort threshold.\n"
+        "2. **Privacy amplification still rescues partial attacks.** At "
+        "$p \\le 0.1$ the realistic ($f_{ec} = 1.16$) key rate stays "
+        "positive &mdash; Alice and Bob keep generating secret bits.\n"
+        "3. **PNS is *not* detectable by QBER alone.** This is the "
+        "fundamental limitation of non-decoy BB84 with weak coherent "
+        "sources, and is exactly why decoy-state protocols exist.\n"
+        "4. **Information-theoretic security is conditional.** QKD is "
+        "provably secure under the *stated* assumptions: single-photon "
+        "source, authenticated classical channel, no side channels, "
+        "asymptotic key length. \"Unbreakable\" is marketing, not "
+        "physics."
+    ))
+
+    cells.append(md(
+        "## 9. In the lab\n"
+        "\n"
+        "Commercial QKD systems wrap this analysis in continuous "
+        "monitoring:\n"
+        "\n"
+        "* **Real-time QBER monitoring** &mdash; sliding-window estimates "
+        "  trip the abort threshold as soon as it is crossed.\n"
+        "* **Typical baseline QBER** &mdash; 1–5% from detector dark "
+        "  counts and channel decoherence even when no Eve is present. "
+        "  Anything above ~10% is treated as suspicious.\n"
+        "* **Finite-key effects** &mdash; the asymptotic key rate over-"
+        "  estimates the real, finite-block rate. Practical proofs use "
+        "  composable security with explicit failure parameters.\n"
+        "* **Side channels** &mdash; in practice, attacks usually exploit "
+        "  *implementation* flaws (detector blinding, Trojan-horse "
+        "  injection, timing leaks), not the abstract protocol. Notebook 03 "
+        "  begins the move toward realistic device modelling."
+    ))
+
+    nb.cells = cells
+    nb.metadata = {
+        "kernelspec": {
+            "display_name": "Python 3",
+            "language": "python",
+            "name": "python3",
+        },
+        "language_info": {"name": "python"},
+    }
+    return nb
+
+
