@@ -243,3 +243,58 @@ def build_notebook() -> nbf.NotebookNode:
         "sifted_and_intercepted = sifted_mask & intc\n"
         "eve_correct_rate = float(np.mean(\n"
         "    e_bits[sifted_and_intercepted] == a[sifted_and_intercepted]\n"
+        "))\n"
+        "\n"
+        "print(f\"Eve's accuracy on intercepted sifted bits: {eve_correct_rate:.3f}\")\n"
+        "print(f'Theoretical expectation                  : 0.750')\n"
+        "print(f'  -- 50% correct-basis (perfect) + 25% wrong-basis lucky')\n"
+    ))
+
+    cells.append(md(
+        "## 5. Key rate vs. interception probability\n"
+        "\n"
+        "Per-sifted-bit key rate is "
+        "$K = 1 - h(E) - f_{ec}\\,h(E)$ with $E = 0.25\\,p$. The rate hits "
+        "zero at $h(E^*) = 1/(1+f_{ec})$, giving $E^* \\approx 11.0\\%$ "
+        "($f_{ec}=1$) and $E^* \\approx 9.8\\%$ ($f_{ec}=1.16$). The "
+        "corresponding interception thresholds are $p^* \\approx 0.44$ "
+        "and $p^* \\approx 0.39$."
+    ))
+
+    cells.append(code(
+        "def key_bracket(qber, f_ec):\n"
+        "    return 1.0 - binary_entropy(qber) - f_ec * binary_entropy(qber)\n"
+        "\n"
+        "q_thresh_ideal = brentq(lambda q: key_bracket(q, 1.0), 1e-12, 0.5 - 1e-12)\n"
+        "q_thresh_real = brentq(lambda q: key_bracket(q, 1.16), 1e-12, 0.5 - 1e-12)\n"
+        "p_thresh_ideal = q_thresh_ideal / 0.25\n"
+        "p_thresh_real = q_thresh_real / 0.25\n"
+        "\n"
+        "key_rates_ideal = []\n"
+        "key_rates_real = []\n"
+        "for q in qber_values:\n"
+        "    h_q = binary_entropy(q) if q > 0 else 0.0\n"
+        "    key_rates_ideal.append(max(0.0, 1.0 - 2.0 * h_q))\n"
+        "    key_rates_real.append(max(0.0, 1.0 - h_q - 1.16 * h_q))\n"
+        "\n"
+        "key_rates_ideal = np.asarray(key_rates_ideal)\n"
+        "key_rates_real = np.asarray(key_rates_real)\n"
+        "\n"
+        "print(f'f_ec = 1.00 : QBER threshold = {q_thresh_ideal:.4f}, '\n"
+        "      f'p threshold = {p_thresh_ideal:.3f}')\n"
+        "print(f'f_ec = 1.16 : QBER threshold = {q_thresh_real:.4f}, '\n"
+        "      f'p threshold = {p_thresh_real:.3f}')\n"
+    ))
+
+    cells.append(md(
+        "### Figure 4 &mdash; key rate vs. interception probability\n"
+        "\n"
+        "Saved at 300 dpi as "
+        "`figures/key_rate_vs_interception.png`. The shaded region marks "
+        "the regime where a positive realistic key rate "
+        "($f_{ec} = 1.16$) is achievable. The vertical dashed lines mark "
+        "the abort thresholds."
+    ))
+
+    cells.append(code(
+        "fig, ax = plt.subplots(figsize=(8, 5))\n"
