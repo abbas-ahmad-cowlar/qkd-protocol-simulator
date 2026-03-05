@@ -133,3 +133,58 @@ def build_notebook() -> nbf.NotebookNode:
 
     cells.append(md(
         "### 2.1 Comparison: with vs. without Eve\n"
+        "\n"
+        "Same seed, same number of pulses &mdash; only Eve's presence "
+        "changes. The QBER ratio makes Eve impossible to miss."
+    ))
+
+    cells.append(code(
+        "rng2 = np.random.default_rng(2026)\n"
+        "a2_bits, a2_bases = alice_prepare(N, rng=rng2)\n"
+        "b2_bases = rng2.integers(0, 2, N)\n"
+        "b2_bits = bob_measure(a2_bits, a2_bases, b2_bases, rng=rng2)\n"
+        "a2_s, b2_s = sift(a2_bits, b2_bits, a2_bases, b2_bases)\n"
+        "qber_no_eve = float(np.mean(a2_s != b2_s)) if len(a2_s) > 0 else 0.0\n"
+        "\n"
+        "print('Comparison:')\n"
+        "print(f'  No Eve   : QBER = {qber_no_eve:.4f}')\n"
+        "print(f'  Full Eve : QBER = {qber_full_eve:.4f}')\n"
+        "ratio = qber_full_eve / max(qber_no_eve, 1e-10)\n"
+        "print(f'  Ratio    : {ratio:.0f}x')\n"
+    ))
+
+    cells.append(md(
+        "## 3. QBER vs. interception probability\n"
+        "\n"
+        "Sweep Eve's interception probability $p$ from 0 to 1. The "
+        "expected curve is the straight line $\\mathrm{QBER} = 0.25\\,p$ "
+        "&mdash; intercepted qubits each carry an independent 25% error "
+        "probability and non-intercepted qubits contribute zero error."
+    ))
+
+    cells.append(code(
+        "interception_rates = np.linspace(0.0, 1.0, 21)\n"
+        "qber_values = []\n"
+        "\n"
+        "for p in interception_rates:\n"
+        "    rng_sweep = np.random.default_rng(2026)\n"
+        "    a, ab = alice_prepare(N, rng=rng_sweep)\n"
+        "    _, fwd_b, fwd_ba, _ = eve_intercept_resend(\n"
+        "        a, ab, interception_rate=float(p), rng=rng_sweep,\n"
+        "    )\n"
+        "    bb = rng_sweep.integers(0, 2, N)\n"
+        "    bm = bob_measure(fwd_b, fwd_ba, bb, rng=rng_sweep)\n"
+        "    a_s, b_s = sift(a, bm, ab, bb)\n"
+        "    qber_values.append(float(np.mean(a_s != b_s)) if len(a_s) > 0 else 0.0)\n"
+        "\n"
+        "qber_values = np.asarray(qber_values)\n"
+        "for p, q in zip(interception_rates[::4], qber_values[::4]):\n"
+        "    print(f'  p = {p:.2f}  ->  QBER = {q:.4f}  (theory {0.25 * p:.4f})')\n"
+    ))
+
+    cells.append(md(
+        "### Figure 3 &mdash; QBER vs. interception probability\n"
+        "\n"
+        "Saved at 300 dpi as "
+        "`figures/qber_vs_interception.png`. The horizontal dashed lines "
+        "mark the BB84 abort thresholds for $f_{ec} = 1$ and "
