@@ -152,3 +152,58 @@ def _cvqkd_symplectic_eigenvalues_homodyne(V_A, eta, xi, eps=1e-12):
     return nu1, nu2, nu3, a, b, c
 
 
+def cvqkd_holevo_bound_homodyne(V_A, eta, xi, eps=1e-12):
+    """Holevo bound chi(B:E) for reverse-reconciliation, homodyne GG02.
+
+    Physics: the asymptotic collective-attack Gaussian Holevo bound
+    against an entangling-cloner adversary is
+
+        chi(B:E) = g(nu1) + g(nu2) - g(nu3)
+
+    where ``g(nu)`` is the von Neumann entropy of a thermal mode with
+    symplectic eigenvalue ``nu``, computed via
+    ``info_theory.gaussian_entropy``. ``nu1, nu2`` come from the joint
+    Alice-Bob covariance matrix; ``nu3`` is the conditional eigenvalue
+    after Bob's homodyne measurement of one quadrature.
+
+    Untrusted-detector model: the supplied ``eta`` should
+    already include the detector efficiency, with all loss attributed to
+    the channel available to Eve. The pure-state limit ``eta = 1,
+    xi = 0`` yields ``nu1 = nu2 = nu3 = 1`` and ``chi = 0``.
+
+    Parameters
+    ----------
+    V_A : float
+        Alice's modulation variance in shot-noise units.
+    eta : float or numpy.ndarray
+        Total transmittance in (0, 1]. ``eta = 0`` is rejected because
+        the line-noise term ``1/eta`` is singular there.
+    xi : float
+        Input-referred excess noise.
+    eps : float, optional
+        Floor used in ``np.clip(eta, eps, 1.0)`` to keep the formulas
+        finite at extremely small ``eta``. Default 1e-12.
+
+    Returns
+    -------
+    float or numpy.ndarray
+        ``chi(B:E)`` in bits / symbol, non-negative.
+    """
+    nu1, nu2, nu3, _, _, _ = _cvqkd_symplectic_eigenvalues_homodyne(
+        V_A, eta, xi, eps=eps,
+    )
+
+    chi_BE = (
+        gaussian_entropy(nu1)
+        + gaussian_entropy(nu2)
+        - gaussian_entropy(nu3)
+    )
+    if np.any(np.asarray(chi_BE) < -1e-9):
+        raise ValueError(
+            "Holevo bound became materially negative -- check covariance formulas"
+        )
+    return np.maximum(0.0, chi_BE)
+
+
+# ---------------------------------------------------------------------------
+# Per-symbol secure-key rate
