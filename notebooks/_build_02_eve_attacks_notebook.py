@@ -1,0 +1,528 @@
+"""
+Builder script for notebooks/02_eve_attacks.ipynb.
+
+Run once with:
+    python notebooks/_build_02_eve_attacks_notebook.py
+
+Then execute via notebooks/_execute_notebook02.py to populate outputs and
+save figures.
+"""
+
+from pathlib import Path
+
+import nbformat as nbf
+
+NB_PATH = Path(__file__).resolve().parent / "02_eve_attacks.ipynb"
+
+
+def md(text: str) -> nbf.NotebookNode:
+    return nbf.v4.new_markdown_cell(text)
+
+
+def code(text: str) -> nbf.NotebookNode:
+    return nbf.v4.new_code_cell(text)
+
+
+def build_notebook() -> nbf.NotebookNode:
+    nb = nbf.v4.new_notebook()
+    cells = []
+
+    cells.append(md(
+        "# Eavesdropper Attacks on BB84\n"
+        "\n"
+        "Generated from the public notebook builder for reproducible analysis.\n"
+        "\n"
+        "Notebook 02 introduces Eve. We add a single function to `src/bb84.py` "
+        "&mdash; `eve_intercept_resend` &mdash; and use it to verify two of "
+        "the most quoted BB84 results:\n"
+        "\n"
+        "1. **Full intercept-resend produces $\\mathrm{QBER} = 25\\%$** "
+        "(not 50%, despite Eve guessing the wrong basis half the time).\n"
+        "2. **QBER is linear in Eve's interception probability:** "
+        "$\\mathrm{QBER}(p) = 0.25\\,p$.\n"
+        "\n"
+        "We then push to the security threshold and chart the key rate "
+        "vs. interception probability for two error-correction efficiencies. "
+        "All values are simulated end-to-end &mdash; nothing is hardcoded.\n"
+        "\n"
+        "**Caveat:** every key-rate plot in this notebook "
+        "uses the *idealized single-photon source model*. Real weak "
+        "coherent sources are vulnerable to PNS attacks; that is "
+        "discussed conceptually in Step 3.4 and addressed by decoy states."
+    ))
+
+    cells.append(md("## 1. Bootstrap and imports"))
+
+    cells.append(code(
+        "from pathlib import Path\n"
+        "import sys\n"
+        "\n"
+        "\n"
+        "def find_project_root(start=None):\n"
+        "    start = Path.cwd().resolve() if start is None else Path(start).resolve()\n"
+        "    for candidate in [start, *start.parents]:\n"
+        "        if (candidate / 'src').is_dir() and (candidate / 'notebooks').is_dir():\n"
+        "            return candidate\n"
+        "    raise RuntimeError('Could not find project root')\n"
+        "\n"
+        "\n"
+        "PROJECT_ROOT = find_project_root()\n"
+        "FIG_DIR = PROJECT_ROOT / 'figures'\n"
+        "FIG_DIR.mkdir(parents=True, exist_ok=True)\n"
+        "\n"
+        "if str(PROJECT_ROOT) not in sys.path:\n"
+        "    sys.path.insert(0, str(PROJECT_ROOT))\n"
+        "\n"
+        "print(f'Project root: {PROJECT_ROOT}')\n"
+    ))
+
+    cells.append(code(
+        "import numpy as np\n"
+        "%matplotlib inline\n"
+        "import matplotlib.pyplot as plt\n"
+        "from scipy.optimize import brentq\n"
+        "\n"
+        "from src.bb84 import (\n"
+        "    alice_prepare, bob_measure, sift, estimate_qber,\n"
+        "    error_correction, final_key_length, eve_intercept_resend,\n"
+        ")\n"
+        "from src.info_theory import binary_entropy\n"
+        "\n"
+        "plt.style.use('seaborn-v0_8-whitegrid')\n"
+        "plt.rcParams.update({'font.size': 12, 'figure.dpi': 150})\n"
+        "\n"
+        "rng_master = np.random.default_rng(2026)\n"
+        "N = 100_000\n"
+    ))
+
+    cells.append(md(
+        "## 2. The intercept-resend attack &mdash; QBER = 25%\n"
+        "\n"
+        "Eve intercepts every qubit, picks $Z$ or $X$ at random, measures, "
+        "re-prepares a fresh photon in *her* basis, and forwards it to "
+        "Bob. The Born rule applies twice:\n"
+        "\n"
+        "* Eve's wrong-basis measurement (probability 1/2) gives a uniform "
+        "  random result.\n"
+        "* Bob's correct-basis measurement of Eve's wrong-basis state has "
+        "  50% overlap with each eigenstate, so Bob errs with probability "
+        "  1/2 on those rounds.\n"
+        "\n"
+        "$\\mathrm{QBER} = P(\\text{Eve wrong}) \\times P(\\text{Bob err} "
+        "\\mid \\text{Eve wrong}) = 1/2 \\times 1/2 = 1/4$."
+    ))
+
+    cells.append(code(
+        "rng = np.random.default_rng(2026)\n"
+        "\n"
+        "alice_bits, alice_bases = alice_prepare(N, rng=rng)\n"
+        "eve_bits, fwd_bits, fwd_bases, intercepted = eve_intercept_resend(\n"
+        "    alice_bits, alice_bases, interception_rate=1.0, rng=rng,\n"
+        ")\n"
+        "bob_bases = rng.integers(0, 2, N)\n"
+        "bob_bits = bob_measure(fwd_bits, fwd_bases, bob_bases, rng=rng)\n"
+        "\n"
+        "alice_sifted, bob_sifted = sift(alice_bits, bob_bits, alice_bases, bob_bases)\n"
+        "qber_full_eve = float(np.mean(alice_sifted != bob_sifted))\n"
+        "\n"
+        "print(f'BB84 with full intercept-resend (N = {N:,}, seed = 2026):')\n"
+        "print(f'  Sifted key length : {len(alice_sifted):,}')\n"
+        "print(f'  QBER              : {qber_full_eve:.4f}  (theory 0.2500)')\n"
+        "print(f'  Eve detected ?    : {\"YES\" if qber_full_eve > 0.05 else \"NO\"}')\n"
+    ))
+
+    cells.append(md(
+        "### 2.1 Comparison: with vs. without Eve\n"
+        "\n"
+        "Same seed, same number of pulses &mdash; only Eve's presence "
+        "changes. The QBER ratio makes Eve impossible to miss."
+    ))
+
+    cells.append(code(
+        "rng2 = np.random.default_rng(2026)\n"
+        "a2_bits, a2_bases = alice_prepare(N, rng=rng2)\n"
+        "b2_bases = rng2.integers(0, 2, N)\n"
+        "b2_bits = bob_measure(a2_bits, a2_bases, b2_bases, rng=rng2)\n"
+        "a2_s, b2_s = sift(a2_bits, b2_bits, a2_bases, b2_bases)\n"
+        "qber_no_eve = float(np.mean(a2_s != b2_s)) if len(a2_s) > 0 else 0.0\n"
+        "\n"
+        "print('Comparison:')\n"
+        "print(f'  No Eve   : QBER = {qber_no_eve:.4f}')\n"
+        "print(f'  Full Eve : QBER = {qber_full_eve:.4f}')\n"
+        "ratio = qber_full_eve / max(qber_no_eve, 1e-10)\n"
+        "print(f'  Ratio    : {ratio:.0f}x')\n"
+    ))
+
+    cells.append(md(
+        "## 3. QBER vs. interception probability\n"
+        "\n"
+        "Sweep Eve's interception probability $p$ from 0 to 1. The "
+        "expected curve is the straight line $\\mathrm{QBER} = 0.25\\,p$ "
+        "&mdash; intercepted qubits each carry an independent 25% error "
+        "probability and non-intercepted qubits contribute zero error."
+    ))
+
+    cells.append(code(
+        "interception_rates = np.linspace(0.0, 1.0, 21)\n"
+        "qber_values = []\n"
+        "\n"
+        "for p in interception_rates:\n"
+        "    rng_sweep = np.random.default_rng(2026)\n"
+        "    a, ab = alice_prepare(N, rng=rng_sweep)\n"
+        "    _, fwd_b, fwd_ba, _ = eve_intercept_resend(\n"
+        "        a, ab, interception_rate=float(p), rng=rng_sweep,\n"
+        "    )\n"
+        "    bb = rng_sweep.integers(0, 2, N)\n"
+        "    bm = bob_measure(fwd_b, fwd_ba, bb, rng=rng_sweep)\n"
+        "    a_s, b_s = sift(a, bm, ab, bb)\n"
+        "    qber_values.append(float(np.mean(a_s != b_s)) if len(a_s) > 0 else 0.0)\n"
+        "\n"
+        "qber_values = np.asarray(qber_values)\n"
+        "for p, q in zip(interception_rates[::4], qber_values[::4]):\n"
+        "    print(f'  p = {p:.2f}  ->  QBER = {q:.4f}  (theory {0.25 * p:.4f})')\n"
+    ))
+
+    cells.append(md(
+        "### Figure 3 &mdash; QBER vs. interception probability\n"
+        "\n"
+        "Saved at 300 dpi as "
+        "`figures/qber_vs_interception.png`. The horizontal dashed lines "
+        "mark the BB84 abort thresholds for $f_{ec} = 1$ and "
+        "$f_{ec} = 1.16$ (computed below)."
+    ))
+
+    cells.append(code(
+        "fig, ax = plt.subplots(figsize=(8, 5))\n"
+        "ax.plot(interception_rates, qber_values, 'o-', label='Simulated QBER',\n"
+        "        markersize=5, color='#4C72B0')\n"
+        "ax.plot(interception_rates, 0.25 * interception_rates, '--',\n"
+        "        label=r'Theory: $\\mathrm{QBER} = 0.25\\,p$', color='gray', linewidth=2)\n"
+        "ax.axhline(0.110, color='red', linestyle=':', alpha=0.7,\n"
+        "           label=r'Threshold $f_{ec}=1$: 11.0%')\n"
+        "ax.axhline(0.098, color='orange', linestyle=':', alpha=0.7,\n"
+        "           label=r'Threshold $f_{ec}=1.16$: 9.8%')\n"
+        "ax.set_xlabel(r\"Eve's interception probability $p$\", fontsize=13)\n"
+        "ax.set_ylabel('QBER', fontsize=13)\n"
+        "ax.set_title('QBER vs. Interception Rate (Intercept-Resend Attack)',\n"
+        "             fontsize=14)\n"
+        "ax.legend(fontsize=10)\n"
+        "ax.set_xlim(-0.02, 1.02)\n"
+        "ax.set_ylim(-0.005, 0.30)\n"
+        "plt.tight_layout()\n"
+        "plt.savefig(FIG_DIR / 'qber_vs_interception.png', dpi=300, bbox_inches='tight')\n"
+        "plt.show()\n"
+    ))
+
+    cells.append(md(
+        "## 4. Eve's information gain\n"
+        "\n"
+        "On rounds Eve actually intercepted *and* that survive sifting:\n"
+        "\n"
+        "* **Correct basis** (probability 1/2): Eve reads Alice's bit "
+        "  exactly &mdash; 1 bit of information.\n"
+        "* **Wrong basis** (probability 1/2): Eve's outcome is uniform "
+        "  random &mdash; 0 bits of information, although she still gets "
+        "  the right bit by chance 50% of the time.\n"
+        "\n"
+        "Eve's *raw bit accuracy* on intercepted sifted rounds is therefore "
+        "$1/2 + 1/2 \\times 1/2 = 75\\%$, but her *information* content is "
+        "only $0.5$ bits per intercepted sifted round &mdash; she cannot "
+        "distinguish certain knowledge from a lucky guess."
+    ))
+
+    cells.append(code(
+        "rng3 = np.random.default_rng(2026)\n"
+        "a, ab = alice_prepare(N, rng=rng3)\n"
+        "e_bits, fwd_b, fwd_ba, intc = eve_intercept_resend(\n"
+        "    a, ab, interception_rate=1.0, rng=rng3,\n"
+        ")\n"
+        "bb = rng3.integers(0, 2, N)\n"
+        "bob_measure(fwd_b, fwd_ba, bb, rng=rng3)  # advance RNG identically\n"
+        "\n"
+        "sifted_mask = ab == bb\n"
+        "sifted_and_intercepted = sifted_mask & intc\n"
+        "eve_correct_rate = float(np.mean(\n"
+        "    e_bits[sifted_and_intercepted] == a[sifted_and_intercepted]\n"
+        "))\n"
+        "\n"
+        "print(f\"Eve's accuracy on intercepted sifted bits: {eve_correct_rate:.3f}\")\n"
+        "print(f'Theoretical expectation                  : 0.750')\n"
+        "print(f'  -- 50% correct-basis (perfect) + 25% wrong-basis lucky')\n"
+    ))
+
+    cells.append(md(
+        "## 5. Key rate vs. interception probability\n"
+        "\n"
+        "Per-sifted-bit key rate is "
+        "$K = 1 - h(E) - f_{ec}\\,h(E)$ with $E = 0.25\\,p$. The rate hits "
+        "zero at $h(E^*) = 1/(1+f_{ec})$, giving $E^* \\approx 11.0\\%$ "
+        "($f_{ec}=1$) and $E^* \\approx 9.8\\%$ ($f_{ec}=1.16$). The "
+        "corresponding interception thresholds are $p^* \\approx 0.44$ "
+        "and $p^* \\approx 0.39$."
+    ))
+
+    cells.append(code(
+        "def key_bracket(qber, f_ec):\n"
+        "    return 1.0 - binary_entropy(qber) - f_ec * binary_entropy(qber)\n"
+        "\n"
+        "q_thresh_ideal = brentq(lambda q: key_bracket(q, 1.0), 1e-12, 0.5 - 1e-12)\n"
+        "q_thresh_real = brentq(lambda q: key_bracket(q, 1.16), 1e-12, 0.5 - 1e-12)\n"
+        "p_thresh_ideal = q_thresh_ideal / 0.25\n"
+        "p_thresh_real = q_thresh_real / 0.25\n"
+        "\n"
+        "key_rates_ideal = []\n"
+        "key_rates_real = []\n"
+        "for q in qber_values:\n"
+        "    h_q = binary_entropy(q) if q > 0 else 0.0\n"
+        "    key_rates_ideal.append(max(0.0, 1.0 - 2.0 * h_q))\n"
+        "    key_rates_real.append(max(0.0, 1.0 - h_q - 1.16 * h_q))\n"
+        "\n"
+        "key_rates_ideal = np.asarray(key_rates_ideal)\n"
+        "key_rates_real = np.asarray(key_rates_real)\n"
+        "\n"
+        "print(f'f_ec = 1.00 : QBER threshold = {q_thresh_ideal:.4f}, '\n"
+        "      f'p threshold = {p_thresh_ideal:.3f}')\n"
+        "print(f'f_ec = 1.16 : QBER threshold = {q_thresh_real:.4f}, '\n"
+        "      f'p threshold = {p_thresh_real:.3f}')\n"
+    ))
+
+    cells.append(md(
+        "### Figure 4 &mdash; key rate vs. interception probability\n"
+        "\n"
+        "Saved at 300 dpi as "
+        "`figures/key_rate_vs_interception.png`. The shaded region marks "
+        "the regime where a positive realistic key rate "
+        "($f_{ec} = 1.16$) is achievable. The vertical dashed lines mark "
+        "the abort thresholds."
+    ))
+
+    cells.append(code(
+        "fig, ax = plt.subplots(figsize=(8, 5))\n"
+        "ax.plot(interception_rates, key_rates_ideal, '-',\n"
+        "        label=r'$f_{ec} = 1.00$ (Shannon limit)',\n"
+        "        color='#4C72B0', linewidth=2)\n"
+        "ax.plot(interception_rates, key_rates_real, '-',\n"
+        "        label=r'$f_{ec} = 1.16$ (realistic)',\n"
+        "        color='#DD8452', linewidth=2)\n"
+        "ax.fill_between(interception_rates, 0, key_rates_real,\n"
+        "                alpha=0.12, color='#DD8452')\n"
+        "ax.axhline(0, color='gray', linewidth=0.5)\n"
+        "ax.axvline(p_thresh_ideal, color='#4C72B0', linestyle='--', alpha=0.7,\n"
+        "           label=fr'Ideal abort: $p \\approx {p_thresh_ideal:.3f}$')\n"
+        "ax.axvline(p_thresh_real, color='#DD8452', linestyle='--', alpha=0.7,\n"
+        "           label=fr'Realistic abort: $p \\approx {p_thresh_real:.3f}$')\n"
+        "ax.set_xlabel(r\"Eve's interception probability $p$\", fontsize=13)\n"
+        "ax.set_ylabel('Key rate per sifted bit', fontsize=13)\n"
+        "ax.set_title('Key Rate vs. Interception Rate\\n'\n"
+        "             r'(Idealized single-photon source model)',\n"
+        "             fontsize=14)\n"
+        "ax.legend(fontsize=10, loc='upper right')\n"
+        "ax.set_xlim(-0.02, 1.02)\n"
+        "ax.set_ylim(-0.05, 1.05)\n"
+        "plt.tight_layout()\n"
+        "plt.savefig(FIG_DIR / 'key_rate_vs_interception.png', dpi=300,\n"
+        "            bbox_inches='tight')\n"
+        "plt.show()\n"
+    ))
+
+    cells.append(md(
+        "## 6. Why simple copying cannot work\n"
+        "\n"
+        "The **no-cloning theorem** (Wootters & Zurek, 1982) forbids any "
+        "unitary that creates an exact copy of an arbitrary unknown "
+        "quantum state. If Eve could clone, she would store one copy and "
+        "forward the other &mdash; no disturbance, no QBER, undetectable. "
+        "Linearity of the postulated unitary is violated for "
+        "superpositions, so the operation simply does not exist in "
+        "quantum mechanics.\n"
+        "\n"
+        "### Stronger attacks exist\n"
+        "\n"
+        "Intercept-resend is the **simplest** attack, not the optimal one. "
+        "Stronger families include:\n"
+        "\n"
+        "* **Optimal individual attack** &mdash; Eve entangles a fresh "
+        "  ancilla with each qubit and measures it later.\n"
+        "* **Collective attack** &mdash; Eve stores all ancillas and "
+        "  measures them jointly.\n"
+        "* **Coherent attack** &mdash; Eve applies a global operation to "
+        "  every ancilla.\n"
+        "\n"
+        "These attacks require full security proofs (Devetak-Winter, "
+        "Renner) that are beyond this educational project's scope. The "
+        "BB84 key-rate formula $K = 1 - h(\\mathrm{QBER}) - f_{ec}\\,"
+        "h(\\mathrm{QBER})$ has been proven secure against **all** "
+        "collective attacks in the asymptotic limit."
+    ))
+
+    cells.append(md(
+        "## 7. Photon Number Splitting (PNS) &mdash; conceptual\n"
+        "\n"
+        "Real BB84 transmitters use *attenuated lasers* &mdash; coherent "
+        "states with mean photon number $\\mu$ sized so that \"most\" "
+        "non-vacuum pulses are single-photon. The photon-number "
+        "distribution is Poissonian:\n"
+        "\n"
+        "$$P(n) = e^{-\\mu}\\,\\mu^{n} / n!$$\n"
+        "\n"
+        "Multi-photon probability uses the **exact** formula "
+        "(the exact Poisson check):\n"
+        "\n"
+        "$$P(n \\ge 2) = 1 - e^{-\\mu}(1 + \\mu)$$\n"
+        "\n"
+        "The $\\mu^2/2$ approximation is loose at $\\mu \\approx 0.5$ "
+        "(see table below).\n"
+        "\n"
+        "Eve's PNS attack on multi-photon pulses:\n"
+        "\n"
+        "1. QND photon counting determines $n$ without disturbing the "
+        "   states.\n"
+        "2. Eve splits off one photon and stores it in a quantum memory.\n"
+        "3. The remaining photon is forwarded to Bob unchanged "
+        "   &mdash; **no QBER signature**.\n"
+        "4. After basis announcement during sifting, Eve measures her "
+        "   stored photon in the **correct** basis and recovers Alice's "
+        "   bit perfectly.\n"
+        "\n"
+        "**Decoy states** (Lo, Ma & Chen, 2005) defeat PNS by randomly "
+        "varying $\\mu$ between signal ($\\mu_s \\sim 0.5$), decoy "
+        "($\\mu_d \\sim 0.1$) and vacuum ($\\mu_v = 0$). Eve cannot "
+        "distinguish the intensities, but PNS distorts the relative "
+        "yields of signal and decoy pulses, so Alice and Bob detect the "
+        "attack by comparing yield statistics. Decoy-state implementation "
+        "is an optional Notebook 03 stretch goal."
+    ))
+
+    cells.append(code(
+        "mu_grid = np.array([0.05, 0.10, 0.30, 0.50])\n"
+        "exact = 1.0 - np.exp(-mu_grid) * (1.0 + mu_grid)\n"
+        "approx = mu_grid ** 2 / 2.0\n"
+        "rel_error = (approx - exact) / exact\n"
+        "\n"
+        "print(f'{\"mu\":>6}{\"exact P(n>=2)\":>16}{\"mu^2/2 approx\":>16}{\"rel error\":>14}')\n"
+        "print('-' * 52)\n"
+        "for mu, e, a, r in zip(mu_grid, exact, approx, rel_error):\n"
+        "    print(f'{mu:>6.2f}{e:>16.5f}{a:>16.5f}{r * 100:>12.1f}%')\n"
+    ))
+
+    cells.append(md(
+        "## 8. Security summary table\n"
+        "\n"
+        "Attack-by-attack QBER and key-rate values are **computed** from "
+        "the simulation at $N = 100\\,000$ and seed 2026 . "
+        "The PNS row is conceptual only &mdash; we did not implement it."
+    ))
+
+    cells.append(code(
+        "attacks = [\n"
+        "    ('None (ideal)', 0.0),\n"
+        "    ('Intercept-resend (full)', 1.0),\n"
+        "    ('Intercept-resend (p=0.1)', 0.1),\n"
+        "    ('Intercept-resend (p=0.5)', 0.5),\n"
+        "]\n"
+        "F_EC = 1.16\n"
+        "\n"
+        "rows = []\n"
+        "header = (\n"
+        "    f'{\"Attack\":<32}{\"QBER\":>10}{\"Key rate\":>14}'\n"
+        "    f'{\"Detectable\":>14}{\"Countermeasure\":>22}'\n"
+        ")\n"
+        "print(header)\n"
+        "print('=' * len(header))\n"
+        "\n"
+        "for name, p in attacks:\n"
+        "    rng_t = np.random.default_rng(2026)\n"
+        "    a, ab = alice_prepare(N, rng=rng_t)\n"
+        "    if p > 0:\n"
+        "        _, fwd_b, fwd_ba, _ = eve_intercept_resend(\n"
+        "            a, ab, interception_rate=p, rng=rng_t,\n"
+        "        )\n"
+        "    else:\n"
+        "        fwd_b, fwd_ba = a, ab\n"
+        "    bb = rng_t.integers(0, 2, N)\n"
+        "    bm = bob_measure(fwd_b, fwd_ba, bb, rng=rng_t)\n"
+        "    a_s, b_s = sift(a, bm, ab, bb)\n"
+        "    q = float(np.mean(a_s != b_s)) if len(a_s) > 0 else 0.0\n"
+        "    h_q = binary_entropy(q) if q > 0 else 0.0\n"
+        "    kr = max(0.0, 1.0 - h_q - F_EC * h_q)\n"
+        "    if p == 0.0:\n"
+        "        detect = 'N/A'\n"
+        "        counter = 'N/A'\n"
+        "    elif q > 0.05:\n"
+        "        detect = 'Yes (QBER)'\n"
+        "        counter = 'Abort' if kr == 0.0 else 'Priv. amplify'\n"
+        "    else:\n"
+        "        detect = 'Marginal'\n"
+        "        counter = 'Priv. amplify'\n"
+        "    rows.append((name, q, kr, detect, counter))\n"
+        "    print(f'{name:<32}{q:>10.4f}{kr:>14.4f}{detect:>14}{counter:>22}')\n"
+        "\n"
+        "# PNS row -- conceptual\n"
+        "print(\n"
+        "    f'{\"PNS (multi-photon)\":<32}'\n"
+        "    f'{\"~0\":>10}{\"overclaimed\":>14}{\"No (QBER)\":>14}'\n"
+        "    f'{\"Decoy states\":>22}'\n"
+        ")\n"
+    ))
+
+    cells.append(md(
+        "### Key takeaways\n"
+        "\n"
+        "1. **Intercept-resend is detectable.** Even partial interception "
+        "raises QBER above background, and at full interception the QBER "
+        "(25%) is more than double the abort threshold.\n"
+        "2. **Privacy amplification still rescues partial attacks.** At "
+        "$p \\le 0.1$ the realistic ($f_{ec} = 1.16$) key rate stays "
+        "positive &mdash; Alice and Bob keep generating secret bits.\n"
+        "3. **PNS is *not* detectable by QBER alone.** This is the "
+        "fundamental limitation of non-decoy BB84 with weak coherent "
+        "sources, and is exactly why decoy-state protocols exist.\n"
+        "4. **Information-theoretic security is conditional.** QKD is "
+        "provably secure under the *stated* assumptions: single-photon "
+        "source, authenticated classical channel, no side channels, "
+        "asymptotic key length. \"Unbreakable\" is marketing, not "
+        "physics."
+    ))
+
+    cells.append(md(
+        "## 9. In the lab\n"
+        "\n"
+        "Commercial QKD systems wrap this analysis in continuous "
+        "monitoring:\n"
+        "\n"
+        "* **Real-time QBER monitoring** &mdash; sliding-window estimates "
+        "  trip the abort threshold as soon as it is crossed.\n"
+        "* **Typical baseline QBER** &mdash; 1–5% from detector dark "
+        "  counts and channel decoherence even when no Eve is present. "
+        "  Anything above ~10% is treated as suspicious.\n"
+        "* **Finite-key effects** &mdash; the asymptotic key rate over-"
+        "  estimates the real, finite-block rate. Practical proofs use "
+        "  composable security with explicit failure parameters.\n"
+        "* **Side channels** &mdash; in practice, attacks usually exploit "
+        "  *implementation* flaws (detector blinding, Trojan-horse "
+        "  injection, timing leaks), not the abstract protocol. Notebook 03 "
+        "  begins the move toward realistic device modelling."
+    ))
+
+    nb.cells = cells
+    nb.metadata = {
+        "kernelspec": {
+            "display_name": "Python 3",
+            "language": "python",
+            "name": "python3",
+        },
+        "language_info": {"name": "python"},
+    }
+    return nb
+
+
+def main():
+    nb = build_notebook()
+    NB_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with NB_PATH.open("w", encoding="utf-8") as fh:
+        nbf.write(nb, fh)
+    print(f"Wrote {NB_PATH}")
+
+
+if __name__ == "__main__":
+    main()
