@@ -112,3 +112,43 @@ def cvqkd_mutual_info_heterodyne(V_A, eta, xi):
 # Symplectic eigenvalues + Holevo bound
 # ---------------------------------------------------------------------------
 
+def _cvqkd_symplectic_eigenvalues_homodyne(V_A, eta, xi, eps=1e-12):
+    """Return ``(nu1, nu2, nu3, a, b, c)`` for GG02 homodyne.
+
+    Builds the joint Alice-Bob covariance matrix in normal form
+
+        gamma_AB = [[a I, c Z], [c Z, b I]]
+
+    with ``V = V_A + 1``, ``chi_line = 1/T - 1 + xi``, ``T = eta``,
+    ``a = V``, ``b = T (V + chi_line)``, ``c = sqrt(T (V**2 - 1))``,
+    then computes the two unconditional symplectic eigenvalues
+    ``nu1, nu2`` and the conditional eigenvalue ``nu3`` after Bob's
+    homodyne measurement of one quadrature. All three are clamped to
+    ``>= 1`` to absorb floating-point noise (physical eigenvalues
+    cannot drop below 1 under our convention).
+    """
+    eta_arr = np.asarray(eta, dtype=float)
+    if np.any((eta_arr <= 0.0) | (eta_arr > 1.0)):
+        raise ValueError("eta must be in (0, 1] for Holevo calculation")
+    if V_A < 0 or xi < 0:
+        raise ValueError("V_A and xi must be nonnegative")
+
+    T = np.clip(eta_arr, eps, 1.0)
+    V = V_A + 1.0
+    chi_line = 1.0 / T - 1.0 + xi
+
+    a = V * np.ones_like(T)
+    b = T * (V + chi_line)
+    c = np.sqrt(np.maximum(T * (V**2 - 1.0), 0.0))
+
+    Delta = a**2 + b**2 - 2.0 * c**2
+    det_gamma = (a * b - c**2) ** 2
+    rad = np.maximum(Delta**2 - 4.0 * det_gamma, 0.0)
+
+    nu1 = np.sqrt(np.maximum((Delta + np.sqrt(rad)) / 2.0, 1.0))
+    nu2 = np.sqrt(np.maximum((Delta - np.sqrt(rad)) / 2.0, 1.0))
+    nu3 = np.sqrt(np.maximum(a * (a - c**2 / b), 1.0))
+
+    return nu1, nu2, nu3, a, b, c
+
+
