@@ -72,3 +72,43 @@ def cvqkd_mutual_info_homodyne(V_A, eta, xi):
     return 0.5 * np.log2(1.0 + snr)
 
 
+def cvqkd_mutual_info_heterodyne(V_A, eta, xi):
+    """Alice-Bob mutual information for heterodyne detection.
+
+    Heterodyne measures both quadratures in one shot but pays one extra
+    unit of vacuum noise per quadrature (the beam-splitter penalty), so
+
+        I_het(A:B) = log2(1 + eta * V_A / (2 + eta * xi))
+
+    Modeling caveat: this function is provided for the homodyne-vs-
+    heterodyne mutual-information comparison only. The matching
+    heterodyne Holevo bound is NOT implemented in this project, so do
+    not use this function inside a secure-key-rate calculation.
+
+    Parameters
+    ----------
+    V_A : float
+        Alice's modulation variance in shot-noise units.
+    eta : float or numpy.ndarray
+        Total transmittance in [0, 1].
+    xi : float
+        Input-referred excess noise.
+
+    Returns
+    -------
+    float or numpy.ndarray
+        Mutual information in bits / symbol.
+    """
+    eta_arr = np.asarray(eta, dtype=float)
+    if np.any((eta_arr < 0.0) | (eta_arr > 1.0)):
+        raise ValueError("eta must be in [0, 1]")
+    if V_A < 0 or xi < 0:
+        raise ValueError("V_A and xi must be nonnegative")
+    snr = eta_arr * V_A / (2.0 + eta_arr * xi)
+    return np.log2(1.0 + snr)
+
+
+# ---------------------------------------------------------------------------
+# Symplectic eigenvalues + Holevo bound
+# ---------------------------------------------------------------------------
+
