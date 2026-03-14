@@ -35,3 +35,9 @@ def test_mutual_info_homodyne_noiseless():
     assert np.isclose(I, 0.5 * np.log2(21), rtol=1e-9)
 
 
+def test_mutual_info_homodyne_loss_reduces():
+    I_full = cvqkd_mutual_info_homodyne(20, 1.0, 0)
+    I_half = cvqkd_mutual_info_homodyne(20, 0.5, 0)
+    assert I_half < I_full
+
+
