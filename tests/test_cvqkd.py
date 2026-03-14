@@ -60,3 +60,12 @@ def test_mutual_info_homodyne_vectorized():
     assert np.all(np.diff(I) >= -1e-12)  # monotonic in eta
 
 
+def test_mutual_info_homodyne_invalid_inputs():
+    with pytest.raises(ValueError):
+        cvqkd_mutual_info_homodyne(-1.0, 0.5, 0)
+    with pytest.raises(ValueError):
+        cvqkd_mutual_info_homodyne(20, 1.5, 0)
+    with pytest.raises(ValueError):
+        cvqkd_mutual_info_homodyne(20, 0.5, -0.1)
+
+
