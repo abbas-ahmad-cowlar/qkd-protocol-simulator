@@ -41,3 +41,9 @@ def test_mutual_info_homodyne_loss_reduces():
     assert I_half < I_full
 
 
+def test_mutual_info_homodyne_excess_noise_reduces():
+    I_clean = cvqkd_mutual_info_homodyne(20, 0.5, 0)
+    I_noisy = cvqkd_mutual_info_homodyne(20, 0.5, 0.1)
+    assert I_noisy < I_clean
+
+
