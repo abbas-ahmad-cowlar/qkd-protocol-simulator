@@ -209,3 +209,58 @@ def cvqkd_holevo_bound_homodyne(V_A, eta, xi, eps=1e-12):
 # Per-symbol secure-key rate
 # ---------------------------------------------------------------------------
 
+def cvqkd_key_rate(L, V_A=20.0, xi=0.01, eta_det=0.6,
+                   alpha_dB=0.2, beta=0.95):
+    """Per-symbol asymptotic secure-key rate for GG02 homodyne reverse
+    reconciliation.
+
+    Physics: ``K = max(0, beta * I(A:B) - chi(B:E))``. The
+    reconciliation efficiency ``beta`` multiplies only ``I(A:B)``,
+    NOT the Holevo bound. Total transmittance is ``eta = eta_ch *
+    eta_det`` under the untrusted-detector security model -- detector
+    loss is attributed to Eve.
+
+    Edge case: ``eta = 0`` makes ``chi_line = 1/eta - 1 + xi`` singular,
+    so we short-circuit zero transmittance to zero key without invoking
+    the Holevo helper.
+
+    Parameters
+    ----------
+    L : float or numpy.ndarray
+        Fiber length in km.
+    V_A : float, optional
+        Alice's modulation variance. Default 20.
+    xi : float, optional
+        Input-referred excess noise. Default 0.01.
+    eta_det : float, optional
+        Detector efficiency in [0, 1]. Default 0.6.
+    alpha_dB : float, optional
+        Fiber attenuation in dB/km (>= 0). Default 0.2.
+    beta : float, optional
+        Reconciliation efficiency in (0, 1]. Default 0.95.
+
+    Returns
+    -------
+    float or numpy.ndarray
+        Per-symbol key rate (bits / symbol). Always >= 0.
+    """
+    if V_A < 0 or xi < 0:
+        raise ValueError("V_A and xi must be nonnegative")
+    if not (0.0 < beta <= 1.0):
+        raise ValueError("beta must be in (0, 1]")
+    if not (0.0 <= eta_det <= 1.0):
+        raise ValueError("eta_det must be in [0, 1]")
+    if alpha_dB < 0.0:
+        raise ValueError("alpha_dB must be nonnegative")
+
+    L_arr = np.asarray(L, dtype=float)
+    scalar_input = L_arr.ndim == 0
+    L_vec = np.atleast_1d(L_arr)
+
+    eta = fiber_transmittance(L_vec, alpha_dB) * eta_det
+    rates = np.zeros_like(eta, dtype=float)
+
+    mask = eta > 0.0
+    if np.any(mask):
+        I_AB = cvqkd_mutual_info_homodyne(V_A, eta[mask], xi)
+        chi_BE = cvqkd_holevo_bound_homodyne(V_A, eta[mask], xi)
