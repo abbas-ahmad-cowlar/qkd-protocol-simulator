@@ -30,3 +30,8 @@ from src.cvqkd import (
 # Mutual information
 # ---------------------------------------------------------------------------
 
+def test_mutual_info_homodyne_noiseless():
+    I = cvqkd_mutual_info_homodyne(20, 1.0, 0)
+    assert np.isclose(I, 0.5 * np.log2(21), rtol=1e-9)
+
+
