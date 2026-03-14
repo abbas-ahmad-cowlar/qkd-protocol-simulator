@@ -69,3 +69,12 @@ def test_mutual_info_homodyne_invalid_inputs():
         cvqkd_mutual_info_homodyne(20, 0.5, -0.1)
 
 
+def test_mutual_info_heterodyne_noiseless():
+    I = cvqkd_mutual_info_heterodyne(20, 1.0, 0)
+    assert np.isclose(I, np.log2(11), rtol=1e-9)
+
+
+# ---------------------------------------------------------------------------
+# Symplectic eigenvalues
+# ---------------------------------------------------------------------------
+
