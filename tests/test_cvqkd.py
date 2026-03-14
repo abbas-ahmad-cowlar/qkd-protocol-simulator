@@ -51,3 +51,12 @@ def test_mutual_info_homodyne_zero_eta():
     assert cvqkd_mutual_info_homodyne(20, 0.0, 0) == 0.0
 
 
+def test_mutual_info_homodyne_vectorized():
+    eta = np.linspace(0.0, 1.0, 11)
+    I = cvqkd_mutual_info_homodyne(20, eta, 0.01)
+    assert I.shape == eta.shape
+    assert np.all(np.isfinite(I))
+    assert I[0] == 0.0
+    assert np.all(np.diff(I) >= -1e-12)  # monotonic in eta
+
+
