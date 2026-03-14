@@ -47,3 +47,7 @@ def test_mutual_info_homodyne_excess_noise_reduces():
     assert I_noisy < I_clean
 
 
+def test_mutual_info_homodyne_zero_eta():
+    assert cvqkd_mutual_info_homodyne(20, 0.0, 0) == 0.0
+
+
