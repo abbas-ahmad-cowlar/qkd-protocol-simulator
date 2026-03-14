@@ -264,3 +264,6 @@ def cvqkd_key_rate(L, V_A=20.0, xi=0.01, eta_det=0.6,
     if np.any(mask):
         I_AB = cvqkd_mutual_info_homodyne(V_A, eta[mask], xi)
         chi_BE = cvqkd_holevo_bound_homodyne(V_A, eta[mask], xi)
+        rates[mask] = np.maximum(0.0, beta * I_AB - chi_BE)
+
+    return float(rates[0]) if scalar_input else rates
