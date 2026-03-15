@@ -117,3 +117,8 @@ def test_eigenvalues_vectorized():
 # Holevo bound
 # ---------------------------------------------------------------------------
 
+def test_holevo_pure_state_zero():
+    chi = cvqkd_holevo_bound_homodyne(20.0, 1.0, 0.0)
+    assert np.isclose(chi, 0.0, atol=1e-9)
+
+
