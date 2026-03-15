@@ -128,3 +128,9 @@ def test_holevo_loss_positive_finite():
     assert np.isfinite(chi)
 
 
+def test_holevo_excess_noise_increases():
+    chi_clean = cvqkd_holevo_bound_homodyne(20.0, 0.5, 0.0)
+    chi_noisy = cvqkd_holevo_bound_homodyne(20.0, 0.5, 0.01)
+    assert chi_noisy > chi_clean
+
+
