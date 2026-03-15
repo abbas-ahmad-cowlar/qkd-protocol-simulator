@@ -159,3 +159,12 @@ def test_key_rate_long_zero():
     assert cvqkd_key_rate(300) == 0.0
 
 
+def test_key_rate_sweep_finite_nonneg():
+    L = np.linspace(0, 300, 301)
+    rates = cvqkd_key_rate(L)
+    assert rates.shape == L.shape
+    assert np.all(np.isfinite(rates))
+    assert np.all(rates >= 0)
+    assert rates[0] > 0
+
+
