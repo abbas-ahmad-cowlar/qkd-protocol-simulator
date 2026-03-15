@@ -134,3 +134,8 @@ def test_holevo_excess_noise_increases():
     assert chi_noisy > chi_clean
 
 
+def test_holevo_rejects_zero_eta():
+    with pytest.raises(ValueError):
+        cvqkd_holevo_bound_homodyne(20.0, 0.0, 0.0)
+
+
