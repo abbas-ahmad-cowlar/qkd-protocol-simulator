@@ -91,3 +91,11 @@ def test_eigenvalues_pure_state_two_mode():
     assert np.isclose(c, np.sqrt(V**2 - 1.0), atol=1e-12)
 
 
+def test_eigenvalues_physicality_lossy_noisy():
+    nu1, nu2, nu3, *_ = _cvqkd_symplectic_eigenvalues_homodyne(20.0, 0.5, 0.01)
+    assert nu1 >= 1.0 - 1e-12
+    assert nu2 >= 1.0 - 1e-12
+    assert nu3 >= 1.0 - 1e-12
+    assert nu1 * nu2 >= 1.0 - 1e-12  # uncertainty principle
+
+
