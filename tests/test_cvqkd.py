@@ -155,3 +155,7 @@ def test_key_rate_short_positive():
     assert cvqkd_key_rate(0) > 0.0
 
 
+def test_key_rate_long_zero():
+    assert cvqkd_key_rate(300) == 0.0
+
+
