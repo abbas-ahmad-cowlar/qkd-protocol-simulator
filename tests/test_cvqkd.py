@@ -104,3 +104,16 @@ def test_eigenvalues_rejects_zero_eta():
         _cvqkd_symplectic_eigenvalues_homodyne(20.0, 0.0, 0.0)
 
 
+def test_eigenvalues_vectorized():
+    eta = np.linspace(0.05, 1.0, 20)
+    nu1, nu2, nu3, *_ = _cvqkd_symplectic_eigenvalues_homodyne(20.0, eta, 0.01)
+    assert nu1.shape == eta.shape
+    assert np.all(nu1 >= 1.0 - 1e-12)
+    assert np.all(nu2 >= 1.0 - 1e-12)
+    assert np.all(nu3 >= 1.0 - 1e-12)
+
+
+# ---------------------------------------------------------------------------
+# Holevo bound
+# ---------------------------------------------------------------------------
+
