@@ -151,3 +151,7 @@ def test_holevo_vectorized():
 # Key rate
 # ---------------------------------------------------------------------------
 
+def test_key_rate_short_positive():
+    assert cvqkd_key_rate(0) > 0.0
+
+
