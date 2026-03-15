@@ -139,3 +139,15 @@ def test_holevo_rejects_zero_eta():
         cvqkd_holevo_bound_homodyne(20.0, 0.0, 0.0)
 
 
+def test_holevo_vectorized():
+    eta = np.linspace(0.05, 1.0, 25)
+    chi = cvqkd_holevo_bound_homodyne(20.0, eta, 0.01)
+    assert chi.shape == eta.shape
+    assert np.all(np.isfinite(chi))
+    assert np.all(chi >= 0.0)
+
+
+# ---------------------------------------------------------------------------
+# Key rate
+# ---------------------------------------------------------------------------
+
