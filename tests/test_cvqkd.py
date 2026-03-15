@@ -122,3 +122,9 @@ def test_holevo_pure_state_zero():
     assert np.isclose(chi, 0.0, atol=1e-9)
 
 
+def test_holevo_loss_positive_finite():
+    chi = cvqkd_holevo_bound_homodyne(20.0, 0.5, 0.0)
+    assert chi > 0.0
+    assert np.isfinite(chi)
+
+
