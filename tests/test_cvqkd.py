@@ -99,3 +99,8 @@ def test_eigenvalues_physicality_lossy_noisy():
     assert nu1 * nu2 >= 1.0 - 1e-12  # uncertainty principle
 
 
+def test_eigenvalues_rejects_zero_eta():
+    with pytest.raises(ValueError):
+        _cvqkd_symplectic_eigenvalues_homodyne(20.0, 0.0, 0.0)
+
+
