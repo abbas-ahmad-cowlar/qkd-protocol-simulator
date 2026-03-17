@@ -174,3 +174,11 @@ def test_key_rate_decreases_with_distance():
     assert np.all(np.diff(rates) <= 1e-12)
 
 
+def test_key_rate_zero_detector_efficiency():
+    """Strictly zero detector efficiency must short-circuit to zero key,
+    not raise from a singular Holevo helper."""
+    assert cvqkd_key_rate(0, eta_det=0.0) == 0.0
+    rates = cvqkd_key_rate(np.linspace(0, 10, 5), eta_det=0.0)
+    assert np.all(rates == 0.0)
+
+
