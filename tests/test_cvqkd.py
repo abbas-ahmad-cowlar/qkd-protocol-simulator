@@ -196,3 +196,11 @@ def test_key_rate_invalid_eta_det():
         cvqkd_key_rate(0, eta_det=1.1)
 
 
+def test_key_rate_excess_noise_reduces():
+    """Higher excess noise must not raise the key rate at fixed distance."""
+    L = 50.0
+    k_low = cvqkd_key_rate(L, xi=0.001)
+    k_high = cvqkd_key_rate(L, xi=0.05)
+    assert k_high <= k_low + 1e-12
+
+
