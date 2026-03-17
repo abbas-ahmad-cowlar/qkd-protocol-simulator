@@ -168,3 +168,9 @@ def test_key_rate_sweep_finite_nonneg():
     assert rates[0] > 0
 
 
+def test_key_rate_decreases_with_distance():
+    L = np.array([0.0, 25.0, 50.0, 75.0, 100.0])
+    rates = cvqkd_key_rate(L)
+    assert np.all(np.diff(rates) <= 1e-12)
+
+
