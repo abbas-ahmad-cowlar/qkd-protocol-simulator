@@ -19,3 +19,7 @@ def md(text: str) -> nbf.NotebookNode:
     return nbf.v4.new_markdown_cell(text)
 
 
+def code(text: str) -> nbf.NotebookNode:
+    return nbf.v4.new_code_cell(text)
+
+
