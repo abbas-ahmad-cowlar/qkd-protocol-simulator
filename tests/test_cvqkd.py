@@ -182,3 +182,10 @@ def test_key_rate_zero_detector_efficiency():
     assert np.all(rates == 0.0)
 
 
+def test_key_rate_invalid_beta():
+    with pytest.raises(ValueError):
+        cvqkd_key_rate(0, beta=0.0)
+    with pytest.raises(ValueError):
+        cvqkd_key_rate(0, beta=1.1)
+
+
