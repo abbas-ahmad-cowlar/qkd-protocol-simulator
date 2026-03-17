@@ -189,3 +189,10 @@ def test_key_rate_invalid_beta():
         cvqkd_key_rate(0, beta=1.1)
 
 
+def test_key_rate_invalid_eta_det():
+    with pytest.raises(ValueError):
+        cvqkd_key_rate(0, eta_det=-0.1)
+    with pytest.raises(ValueError):
+        cvqkd_key_rate(0, eta_det=1.1)
+
+
