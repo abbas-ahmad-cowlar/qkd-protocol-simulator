@@ -204,3 +204,12 @@ def test_key_rate_excess_noise_reduces():
     assert k_high <= k_low + 1e-12
 
 
+def test_key_rate_beta_one_upper_bounds_realistic():
+    L = 50.0
+    k_realistic = cvqkd_key_rate(L, beta=0.95)
+    k_perfect = cvqkd_key_rate(L, beta=1.0)
+    assert k_perfect >= k_realistic - 1e-12
+
+
+if __name__ == "__main__":
+    sys.exit(pytest.main([__file__, "-v"]))
