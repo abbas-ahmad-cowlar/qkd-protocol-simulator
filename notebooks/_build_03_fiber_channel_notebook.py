@@ -463,3 +463,20 @@ def build_notebook() -> nbf.NotebookNode:
         "decoy gives an asymptotic practical estimate for weak coherent "
         "lasers under the simplified assumptions stated above.\n"
         "7. **No EDFAs.** The no-cloning theorem from Notebook 02 is the "
+        "physical reason direct-fiber QKD has a distance limit and why "
+        "longer-reach systems need a different architecture, not a bigger "
+        "amplifier."
+    ))
+
+    nb.cells = cells
+    nb.metadata = {
+        "kernelspec": {
+            "display_name": "Python 3",
+            "language": "python",
+            "name": "python3",
+        },
+        "language_info": {"name": "python"},
+    }
+    return nb
+
+
