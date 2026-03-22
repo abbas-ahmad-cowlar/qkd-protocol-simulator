@@ -1,0 +1,492 @@
+"""
+Builder for notebooks/03_fiber_channel.ipynb (Notebook 03: Fiber Channel Model).
+
+Run with:
+    python notebooks/_build_03_fiber_channel_notebook.py
+
+Then execute via notebooks/_execute_notebook.py 03_fiber_channel.ipynb
+to populate outputs and save the four PNG figures.
+"""
+
+from pathlib import Path
+
+import nbformat as nbf
+
+NB_PATH = Path(__file__).resolve().parent / "03_fiber_channel.ipynb"
+
+
+def md(text: str) -> nbf.NotebookNode:
+    return nbf.v4.new_markdown_cell(text)
+
+
+def code(text: str) -> nbf.NotebookNode:
+    return nbf.v4.new_code_cell(text)
+
+
+def build_notebook() -> nbf.NotebookNode:
+    nb = nbf.v4.new_notebook()
+    cells = []
+
+    cells.append(md(
+        "# Fiber Channel Model for BB84\n"
+        "\n"
+        "Generated from the public notebook builder for reproducible analysis.\n"
+        "\n"
+        "Notebook 03 extends the ideal BB84 simulator to a direct-fiber "
+        "channel model. We add a "
+        "single new module &mdash; `src/channel.py` &mdash; that turns "
+        "fiber attenuation, detector efficiency, dark counts and "
+        "misalignment into a per-pulse secure-key rate, and we generate "
+        "the headline figure of the project: BB84 key rate vs. fiber "
+        "distance.\n"
+        "\n"
+        "Three effects limit performance:\n"
+        "\n"
+        "1. **Fiber attenuation** &mdash; $\\eta(L) = 10^{-\\alpha L / 10}$ "
+        "with $\\alpha = 0.2$ dB/km at the 1550 nm telecom-C minimum.\n"
+        "2. **Detector efficiency** &mdash; $\\eta_{det} \\approx 0.2$ for "
+        "InGaAs APDs, up to $\\sim 0.9$ for SNSPDs.\n"
+        "3. **Dark counts** &mdash; $p_{dark} \\sim 10^{-6}$ per detector "
+        "per gate, summing to $2 p_{dark}$ across BB84's two detectors.\n"
+        "\n"
+        "**Key constraint:** unlike classical telecom, QKD cannot use EDFA "
+        "amplifiers to overcome fiber loss &mdash; the no-cloning theorem "
+        "(Notebook 02) forbids it. Attenuation is the fundamental distance-"
+        "limit driver for direct-fiber QKD, and that is exactly why the "
+        "headline figure below has a hard cutoff.\n"
+        "\n"
+        "**Security caveat.** The non-decoy BB84 curve below "
+        "is the *idealised single-photon source model*. We also implement "
+        "the simplified asymptotic decoy-state estimate (Lo, Ma & Chen, "
+        "2005) so the realistic weak-coherent-pulse case can be compared "
+        "directly."
+    ))
+
+    cells.append(md("## 1. Bootstrap and imports"))
+
+    cells.append(code(
+        "from pathlib import Path\n"
+        "import sys\n"
+        "\n"
+        "\n"
+        "def find_project_root(start=None):\n"
+        "    start = Path.cwd().resolve() if start is None else Path(start).resolve()\n"
+        "    for candidate in [start, *start.parents]:\n"
+        "        if (candidate / 'src').is_dir() and (candidate / 'notebooks').is_dir():\n"
+        "            return candidate\n"
+        "    raise RuntimeError('Could not find project root')\n"
+        "\n"
+        "\n"
+        "PROJECT_ROOT = find_project_root()\n"
+        "FIG_DIR = PROJECT_ROOT / 'figures'\n"
+        "FIG_DIR.mkdir(parents=True, exist_ok=True)\n"
+        "\n"
+        "if str(PROJECT_ROOT) not in sys.path:\n"
+        "    sys.path.insert(0, str(PROJECT_ROOT))\n"
+        "\n"
+        "print(f'Project root: {PROJECT_ROOT}')\n"
+    ))
+
+    cells.append(code(
+        "import numpy as np\n"
+        "%matplotlib inline\n"
+        "import matplotlib.pyplot as plt\n"
+        "from scipy.optimize import brentq\n"
+        "\n"
+        "from src.channel import (\n"
+        "    fiber_transmittance, bb84_signal_prob, total_detection_prob,\n"
+        "    qber_channel, bb84_key_rate, decoy_bb84_key_rate,\n"
+        ")\n"
+        "from src.info_theory import binary_entropy\n"
+        "from src.plotting import semilogy_positive\n"
+        "\n"
+        "plt.style.use('seaborn-v0_8-whitegrid')\n"
+        "plt.rcParams.update({'font.size': 12, 'figure.dpi': 150})\n"
+        "\n"
+        "L_dense = np.linspace(0, 300, 1001)\n"
+    ))
+
+    cells.append(md(
+        "## 2. Fiber transmittance &mdash; the dB convention\n"
+        "\n"
+        "$\\eta(L) = 10^{-\\alpha L / 10}$. The base is **10**, not "
+        "$e$. At $\\alpha = 0.2$ dB/km, every 50 km adds 10 dB of loss "
+        "&mdash; a factor of 10 drop in transmittance."
+    ))
+
+    cells.append(code(
+        "fig, ax = plt.subplots(figsize=(8, 5))\n"
+        "eta = fiber_transmittance(L_dense)\n"
+        "ax.semilogy(L_dense, eta, '-', color='#4C72B0', linewidth=2)\n"
+        "for Lm, label in [(50, '10 dB'), (100, '20 dB'), (150, '30 dB')]:\n"
+        "    eta_m = fiber_transmittance(Lm)\n"
+        "    ax.plot(Lm, eta_m, 'o', color='#DD8452', markersize=8, zorder=5)\n"
+        "    ax.annotate(\n"
+        "        f'{Lm} km: $\\\\eta = {eta_m:.4f}$\\n({label} loss)',\n"
+        "        xy=(Lm, eta_m), xytext=(Lm + 15, eta_m * 3),\n"
+        "        fontsize=9, arrowprops=dict(arrowstyle='->', color='gray'),\n"
+        "    )\n"
+        "ax.set_xlabel('Fiber distance (km)', fontsize=13)\n"
+        "ax.set_ylabel(r'Transmittance $\\eta(L)$', fontsize=13)\n"
+        "ax.set_title(r'Fiber Transmittance at 1550 nm '\n"
+        "             r'($\\alpha = 0.2$ dB/km)', fontsize=14)\n"
+        "ax.set_xlim(0, 300)\n"
+        "ax.set_ylim(1e-7, 2)\n"
+        "plt.tight_layout()\n"
+        "plt.savefig(FIG_DIR / 'fiber_transmittance.png', dpi=300,\n"
+        "            bbox_inches='tight')\n"
+        "plt.show()\n"
+        "\n"
+        "for Lm in [0, 25, 50, 75, 100, 150, 200, 300]:\n"
+        "    print(f'  L = {Lm:>3} km   ->   eta = {fiber_transmittance(Lm):.6e}')\n"
+    ))
+
+    cells.append(md(
+        "## 3. QBER from dark counts and misalignment\n"
+        "\n"
+        "The two-detector model:\n"
+        "\n"
+        "* signal: $S(L) = \\eta_{ch}(L)\\,\\eta_{det}\\,\\mu$\n"
+        "* gain: $Q(L) = S(L) + 2\\,p_{dark}$\n"
+        "* QBER: $E(L) = (e_{det}\\,S + p_{dark}) / Q$\n"
+        "\n"
+        "Why the asymmetry? Both detectors fire dark counts (so $Q$ uses "
+        "$2 p_{dark}$), but only one detector fires *erroneously* per "
+        "dark event &mdash; if a single dark click happens, it lands in "
+        "the wrong detector with probability 1/2, so the QBER numerator "
+        "uses $p_{dark}$, not $2 p_{dark}$ .\n"
+        "\n"
+        "Limits:\n"
+        "\n"
+        "* short distance (with $e_{det} = 0$): $E \\approx p_{dark} / S "
+        "\\to 0$ &mdash; the textbook \"$E \\approx p_{dark}$\" is "
+        "dimensionally wrong; the right approximation is "
+        "$p_{dark}/(\\eta_{ch}\\,\\eta_{det}\\,\\mu)$.\n"
+        "* long distance: $S \\to 0$, $E \\to p_{dark}/(2 p_{dark}) = 0.5$ "
+        "(every click is a coin flip)."
+    ))
+
+    cells.append(code(
+        "fig, ax = plt.subplots(figsize=(8, 5))\n"
+        "qber = qber_channel(L_dense)\n"
+        "qber_with_misalign = qber_channel(L_dense, e_det=0.015)\n"
+        "ax.plot(L_dense, qber, '-', color='#4C72B0', linewidth=2,\n"
+        "        label=r'$e_{det}=0$ (idealised)')\n"
+        "ax.plot(L_dense, qber_with_misalign, '--', color='#55A868', linewidth=2,\n"
+        "        label=r'$e_{det}=0.015$ (realistic)')\n"
+        "ax.axhline(0.110, color='red', linestyle=':', alpha=0.7,\n"
+        "           label=r'Threshold $f_{ec}=1.00$: 11.0%')\n"
+        "ax.axhline(0.098, color='orange', linestyle=':', alpha=0.7,\n"
+        "           label=r'Threshold $f_{ec}=1.16$: 9.8%')\n"
+        "ax.axhline(0.5, color='gray', linestyle=':', alpha=0.4,\n"
+        "           label='Asymptote: 50%')\n"
+        "ax.set_xlabel('Fiber distance (km)', fontsize=13)\n"
+        "ax.set_ylabel('Channel QBER', fontsize=13)\n"
+        "ax.set_title(r'Channel QBER vs Distance '\n"
+        "             r'($\\mu=0.1$, $\\eta_{det}=0.2$, $p_{dark}=10^{-6}$)',\n"
+        "             fontsize=14)\n"
+        "ax.legend(fontsize=10, loc='center right')\n"
+        "ax.set_xlim(0, 300)\n"
+        "ax.set_ylim(-0.02, 0.55)\n"
+        "plt.tight_layout()\n"
+        "plt.savefig(FIG_DIR / 'qber_vs_distance.png', dpi=300,\n"
+        "            bbox_inches='tight')\n"
+        "plt.show()\n"
+    ))
+
+    cells.append(md(
+        "## 4. The headline figure &mdash; BB84 key rate vs. distance\n"
+        "\n"
+        "$$K(L) = \\tfrac{1}{2}\\,Q(L)\\,\\max\\bigl(0,\\;1 - h(E) - f_{ec}\\,h(E)\\bigr)$$\n"
+        "\n"
+        "with sifting factor $q = 1/2$. Notebook 01 reported a per-sifted-bit "
+        "rate; Notebook 03 multiplies by $q$ and the gain $Q$ to land on a "
+        "per-emitted-pulse rate.\n"
+        "\n"
+        "The figure uses a semilogy axis. **Log-scale rule:** "
+        "we plot only positive rates via "
+        "`semilogy_positive(...)` and mark the cutoff with a vertical "
+        "dashed line. Drawing $K = 0$ on a log axis is meaningless and "
+        "would dominate the plot.\n"
+        "\n"
+        "**Idealised single-photon source model.** The realistic decoy-"
+        "state weak-coherent estimate is plotted in the next section."
+    ))
+
+    cells.append(code(
+        "rates = bb84_key_rate(L_dense)\n"
+        "positive = rates > 0\n"
+        "if positive.all():\n"
+        "    L_max = float(L_dense[-1])\n"
+        "else:\n"
+        "    cutoff_idx = int(np.where(~positive)[0][0])\n"
+        "    L_max = float(L_dense[cutoff_idx - 1])\n"
+        "\n"
+        "fig, ax = plt.subplots(figsize=(9, 6))\n"
+        "semilogy_positive(\n"
+        "    ax, L_dense, rates, '-', color='#4C72B0', linewidth=2.5,\n"
+        "    label='BB84 (idealised single-photon)',\n"
+        ")\n"
+        "ax.axvline(L_max, color='red', linestyle='--', alpha=0.7, linewidth=1.5,\n"
+        "           label=fr'Max distance: ${L_max:.0f}$ km')\n"
+        "ax.set_xlabel('Fiber distance (km)', fontsize=14)\n"
+        "ax.set_ylabel('Key rate per pulse (bits / pulse)', fontsize=14)\n"
+        "ax.set_title('BB84 Key Rate vs Fiber Distance\\n'\n"
+        "             r'(Idealised single-photon source model)', fontsize=15)\n"
+        "ax.legend(fontsize=11, loc='upper right')\n"
+        "param_text = (\n"
+        "    r'$\\mu = 0.1$, $\\eta_{det} = 0.2$' + '\\n'\n"
+        "    r'$p_{dark} = 10^{-6}$, $f_{ec} = 1.16$' + '\\n'\n"
+        "    r'$\\alpha = 0.2$ dB/km'\n"
+        ")\n"
+        "ax.text(0.02, 0.04, param_text, transform=ax.transAxes,\n"
+        "        fontsize=10, verticalalignment='bottom',\n"
+        "        bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))\n"
+        "ax.set_xlim(0, 300)\n"
+        "plt.tight_layout()\n"
+        "plt.savefig(FIG_DIR / 'bb84_key_rate_distance.png', dpi=300,\n"
+        "            bbox_inches='tight')\n"
+        "plt.show()\n"
+        "\n"
+        "print(f'Maximum secure distance (idealised): {L_max:.1f} km')\n"
+    ))
+
+    cells.append(md(
+        "## 5. Parameter sensitivity\n"
+        "\n"
+        "Three independent sweeps. Each panel uses the same masked semilogy "
+        "convention as the headline figure.\n"
+        "\n"
+        "1. **Fiber quality $\\alpha$**: 0.15, 0.20, 0.25 dB/km. Lower $\\alpha$ "
+        "shifts the cutoff right by tens of km.\n"
+        "2. **Dark counts $p_{dark}$**: $10^{-7}$, $10^{-6}$, $10^{-5}$. Lower "
+        "dark-count rate is the most effective long-distance lever.\n"
+        "3. **Detector efficiency $\\eta_{det}$**: 0.1 (poor APD), 0.2 (default "
+        "InGaAs APD), 0.5 (entry-level SNSPD)."
+    ))
+
+    cells.append(code(
+        "fig, axes = plt.subplots(1, 3, figsize=(18, 5), sharey=True)\n"
+        "\n"
+        "for alpha, ls, color in [(0.15, '-', '#4C72B0'),\n"
+        "                         (0.20, '--', '#55A868'),\n"
+        "                         (0.25, ':', '#C44E52')]:\n"
+        "    r = bb84_key_rate(L_dense, alpha_dB=alpha)\n"
+        "    semilogy_positive(axes[0], L_dense, r, ls, color=color, linewidth=2,\n"
+        "                      label=fr'$\\alpha = {alpha}$ dB/km')\n"
+        "axes[0].set_title(r'Vary $\\alpha$ (fiber quality)', fontsize=13)\n"
+        "axes[0].legend(fontsize=10)\n"
+        "\n"
+        "for pd, ls, color in [(1e-7, '-', '#4C72B0'),\n"
+        "                      (1e-6, '--', '#55A868'),\n"
+        "                      (1e-5, ':', '#C44E52')]:\n"
+        "    r = bb84_key_rate(L_dense, p_dark=pd)\n"
+        "    semilogy_positive(axes[1], L_dense, r, ls, color=color, linewidth=2,\n"
+        "                      label=fr'$p_{{dark}} = {pd:.0e}$')\n"
+        "axes[1].set_title(r'Vary $p_{dark}$ (detector noise)', fontsize=13)\n"
+        "axes[1].legend(fontsize=10)\n"
+        "\n"
+        "for ed, ls, color in [(0.10, '-', '#4C72B0'),\n"
+        "                      (0.20, '--', '#55A868'),\n"
+        "                      (0.50, ':', '#C44E52')]:\n"
+        "    r = bb84_key_rate(L_dense, eta_det=ed)\n"
+        "    semilogy_positive(axes[2], L_dense, r, ls, color=color, linewidth=2,\n"
+        "                      label=fr'$\\eta_{{det}} = {ed}$')\n"
+        "axes[2].set_title(r'Vary $\\eta_{det}$ (detector efficiency)',\n"
+        "                  fontsize=13)\n"
+        "axes[2].legend(fontsize=10)\n"
+        "\n"
+        "for ax in axes:\n"
+        "    ax.set_xlabel('Fiber distance (km)', fontsize=11)\n"
+        "    ax.set_xlim(0, 300)\n"
+        "axes[0].set_ylabel('Key rate per pulse', fontsize=11)\n"
+        "plt.suptitle('Parameter Sensitivity Analysis '\n"
+        "             '(idealised single-photon source model)',\n"
+        "             fontsize=14, y=1.02)\n"
+        "plt.tight_layout()\n"
+        "plt.savefig(FIG_DIR / 'parameter_sensitivity.png', dpi=300,\n"
+        "            bbox_inches='tight')\n"
+        "plt.show()\n"
+    ))
+
+    cells.append(md(
+        "## 6. Maximum-secure-distance table\n"
+        "\n"
+        "All values are computed via Brent root finding on the key-rate "
+        "bracket &mdash; nothing is hard-coded ."
+    ))
+
+    cells.append(code(
+        "def find_max_distance(mu=0.1, eta_det=0.2, p_dark=1e-6, f_ec=1.16,\n"
+        "                      alpha_dB=0.2, e_det=0.0, L_search=500.0):\n"
+        "    \"\"\"Distance where the per-sifted-bit bracket first crosses zero.\"\"\"\n"
+        "    def bracket(Lv):\n"
+        "        q = qber_channel(Lv, mu, eta_det, p_dark, alpha_dB, e_det)\n"
+        "        return 1.0 - binary_entropy(q) - f_ec * binary_entropy(q)\n"
+        "    if bracket(0.0) <= 0:\n"
+        "        return 0.0\n"
+        "    if bracket(L_search) > 0:\n"
+        "        return L_search\n"
+        "    return brentq(bracket, 0.0, L_search)\n"
+        "\n"
+        "configs = [\n"
+        "    {'label': 'Standard',           'eta_det': 0.20, 'p_dark': 1e-6, 'alpha_dB': 0.20},\n"
+        "    {'label': 'Better detector',    'eta_det': 0.50, 'p_dark': 1e-6, 'alpha_dB': 0.20},\n"
+        "    {'label': 'SNSPD + low dark',   'eta_det': 0.90, 'p_dark': 1e-8, 'alpha_dB': 0.20},\n"
+        "    {'label': 'Low-loss fiber',     'eta_det': 0.20, 'p_dark': 1e-6, 'alpha_dB': 0.15},\n"
+        "    {'label': 'High dark counts',   'eta_det': 0.20, 'p_dark': 1e-5, 'alpha_dB': 0.20},\n"
+        "    {'label': 'Misaligned optics',  'eta_det': 0.20, 'p_dark': 1e-6, 'alpha_dB': 0.20, 'e_det': 0.015},\n"
+        "]\n"
+        "\n"
+        "header = (\n"
+        "    f'{\"Configuration\":<22}{\"eta_det\":>9}{\"p_dark\":>11}'\n"
+        "    f'{\"alpha\":>8}{\"e_det\":>8}{\"Max distance\":>16}'\n"
+        ")\n"
+        "print(header)\n"
+        "print('=' * len(header))\n"
+        "for cfg in configs:\n"
+        "    Lm = find_max_distance(\n"
+        "        eta_det=cfg.get('eta_det', 0.2),\n"
+        "        p_dark=cfg.get('p_dark', 1e-6),\n"
+        "        alpha_dB=cfg.get('alpha_dB', 0.2),\n"
+        "        e_det=cfg.get('e_det', 0.0),\n"
+        "    )\n"
+        "    print(\n"
+        "        f\"{cfg['label']:<22}\"\n"
+        "        f\"{cfg.get('eta_det', 0.2):>9.2f}\"\n"
+        "        f\"{cfg.get('p_dark', 1e-6):>11.0e}\"\n"
+        "        f\"{cfg.get('alpha_dB', 0.2):>8.2f}\"\n"
+        "        f\"{cfg.get('e_det', 0.0):>8.3f}\"\n"
+        "        f\"{Lm:>13.1f} km\"\n"
+        "    )\n"
+    ))
+
+    cells.append(md(
+        "## 7. Decoy-state vs idealised key rate (Step 4.4)\n"
+        "\n"
+        "The idealised curve assumed a perfect single-photon source. The "
+        "decoy-state curve below uses a weak-coherent source with $\\mu = "
+        "0.5$ and the simplified asymptotic estimator (Lo, Ma & Chen, "
+        "2005) implemented in `src.channel.decoy_bb84_key_rate`.\n"
+        "\n"
+        "**Important caveat.** This is a *simplified "
+        "asymptotic decoy estimate*, not a finite-key implementation. It "
+        "assumes infinite decoy statistics. Do not infer security purely "
+        "from raw curve height &mdash; the two curves use different "
+        "$\\mu$, so a fair shape comparison must state which is held "
+        "fixed."
+    ))
+
+    cells.append(code(
+        "rate_ideal = bb84_key_rate(L_dense)\n"
+        "rate_decoy = decoy_bb84_key_rate(L_dense, mu=0.5)\n"
+        "\n"
+        "fig, ax = plt.subplots(figsize=(9, 6))\n"
+        "semilogy_positive(\n"
+        "    ax, L_dense, rate_ideal, '-', color='#4C72B0', linewidth=2,\n"
+        "    label='Idealised single-photon (mu = 0.1)',\n"
+        ")\n"
+        "semilogy_positive(\n"
+        "    ax, L_dense, rate_decoy, '--', color='#DD8452', linewidth=2,\n"
+        "    label='Decoy-state asymptotic (mu = 0.5)',\n"
+        ")\n"
+        "ax.set_xlabel('Fiber distance (km)', fontsize=14)\n"
+        "ax.set_ylabel('Key rate per pulse (bits / pulse)', fontsize=14)\n"
+        "ax.set_title('BB84 key rate: idealised vs decoy-state\\n'\n"
+        "             '(simplified asymptotic models)', fontsize=15)\n"
+        "ax.legend(fontsize=11, loc='upper right')\n"
+        "ax.set_xlim(0, 300)\n"
+        "plt.tight_layout()\n"
+        "plt.savefig(FIG_DIR / 'bb84_idealized_vs_decoy.png', dpi=300,\n"
+        "            bbox_inches='tight')\n"
+        "plt.show()\n"
+        "\n"
+        "L_max_decoy = find_max_distance_decoy = (\n"
+        "    L_dense[(rate_decoy > 0)].max() if (rate_decoy > 0).any() else 0.0\n"
+        ")\n"
+        "L_max_ideal = (\n"
+        "    L_dense[(rate_ideal > 0)].max() if (rate_ideal > 0).any() else 0.0\n"
+        ")\n"
+        "print(f'Idealised cutoff   (mu = 0.1): {L_max_ideal:.1f} km')\n"
+        "print(f'Decoy-state cutoff (mu = 0.5): {L_max_decoy:.1f} km')\n"
+    ))
+
+    cells.append(md(
+        "## 8. Fiber-channel interpretation\n"
+        "\n"
+        "The fiber parameters in this model are standard telecom-band "
+        "reference values used for direct-fiber QKD comparisons:\n"
+        "\n"
+        "| Parameter | Value | Classical telecom | QKD difference |\n"
+        "|---|---|---|---|\n"
+        "| $\\alpha$ at 1550 nm | 0.2 dB/km | identical | identical |\n"
+        "| Fiber type | SMF-28 | identical | identical |\n"
+        "| Loss at 50 km | 10 dB | EDFA-compensated | **no amplification** |\n"
+        "| Loss at 100 km | 20 dB | EDFA-compensated | rate drops $10^2$x |\n"
+        "| Loss at 150 km | 30 dB | EDFA-compensated | near distance limit |\n"
+        "\n"
+        "**The architectural difference.** In classical telecom, EDFAs "
+        "are placed every $\\sim 80$ km to restore signal strength. In "
+        "QKD, the no-cloning theorem forbids amplification of single "
+        "photons &mdash; an EDFA would add stimulated photons to the "
+        "same mode and effectively measure-and-clone the qubit, "
+        "destroying the BB84 encoding. Direct-fiber QKD therefore has a "
+        "hard distance limit of $\\sim 150$&ndash;200 km under standard "
+        "parameters; longer reach requires a different architecture: "
+        "trusted nodes (operationally insecure but practical), quantum "
+        "repeaters (active research), satellite links (free-space, no "
+        "fiber loss), or twin-field protocols (entanglement-swapping "
+        "geometry).\n"
+        "\n"
+        "The key physical distinction is that classical optical links may "
+        "restore power with amplifiers, while QKD must preserve the quantum "
+        "state and therefore cannot use EDFAs on the quantum channel."
+    ))
+
+    cells.append(md(
+        "## 9. What this notebook demonstrates\n"
+        "\n"
+        "1. **Fiber loss is exponential** in distance, base 10 in dB units. "
+        "Every 50 km at 1550 nm gives $10\\times$ less transmittance.\n"
+        "2. **The two-detector dark-count model** introduces the "
+        "asymmetry $Q = S + 2 p_{dark}$ but $E$-numerator $= "
+        "e_{det} S + p_{dark}$ .\n"
+        "3. **QBER monotonically rises with distance**, reaching 0.5 in "
+        "the dark-count-dominated regime &mdash; the protocol must abort.\n"
+        "4. **The headline key-rate curve** has a hard cutoff near 150&ndash;"
+        "200 km. The cutoff distance is what the parameter sweep moves.\n"
+        "5. **Parameter sensitivity**: better detectors and lower dark-"
+        "count rate give the largest gains in maximum range; lower fiber "
+        "loss helps but the slope is fixed by physics.\n"
+        "6. **Decoy-state vs idealised**: the two curves answer different "
+        "questions. Idealised assumes a perfect single-photon source; "
+        "decoy gives an asymptotic practical estimate for weak coherent "
+        "lasers under the simplified assumptions stated above.\n"
+        "7. **No EDFAs.** The no-cloning theorem from Notebook 02 is the "
+        "physical reason direct-fiber QKD has a distance limit and why "
+        "longer-reach systems need a different architecture, not a bigger "
+        "amplifier."
+    ))
+
+    nb.cells = cells
+    nb.metadata = {
+        "kernelspec": {
+            "display_name": "Python 3",
+            "language": "python",
+            "name": "python3",
+        },
+        "language_info": {"name": "python"},
+    }
+    return nb
+
+
+def main():
+    nb = build_notebook()
+    NB_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with NB_PATH.open("w", encoding="utf-8") as fh:
+        nbf.write(nb, fh)
+    print(f"Wrote {NB_PATH}")
+
+
+if __name__ == "__main__":
+    main()
