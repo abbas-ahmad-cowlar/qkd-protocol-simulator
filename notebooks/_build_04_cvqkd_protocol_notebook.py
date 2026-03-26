@@ -305,3 +305,13 @@ def build_notebook() -> nbf.NotebookNode:
     return nb
 
 
+def main():
+    nb = build_notebook()
+    NB_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with NB_PATH.open("w", encoding="utf-8") as fh:
+        nbf.write(nb, fh)
+    print(f"Wrote {NB_PATH}")
+
+
+if __name__ == "__main__":
+    main()
