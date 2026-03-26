@@ -243,3 +243,58 @@ def build_notebook() -> nbf.NotebookNode:
         "\n"
         "fig, ax = plt.subplots(figsize=(8, 5))\n"
         "ax.plot(L_grid, I_hom_grid, '-', linewidth=2, color='#4C72B0',\n"
+        "        label='Homodyne')\n"
+        "ax.plot(L_grid, I_het_grid, '--', linewidth=2, color='#DD8452',\n"
+        "        label='Heterodyne')\n"
+        "ax.set_xlabel('Fiber distance (km)', fontsize=13)\n"
+        "ax.set_ylabel(r'$I(A:B)$ (bits / symbol)', fontsize=13)\n"
+        "ax.set_title('Homodyne vs heterodyne mutual information\\n'\n"
+        "             '(NOT a secure-key comparison)', fontsize=14)\n"
+        "ax.legend(fontsize=11)\n"
+        "ax.set_xlim(0, 200)\n"
+        "plt.tight_layout()\n"
+        "plt.savefig(FIG_DIR / 'homodyne_vs_heterodyne.png', dpi=300,\n"
+        "            bbox_inches='tight')\n"
+        "plt.show()\n"
+        "\n"
+        "print('At eta=1, xi=0:')\n"
+        "print(f'  homodyne  I = {float(cvqkd_mutual_info_homodyne(V_A, 1.0, 0.0)):.4f}')\n"
+        "print(f'  hetero    I = {float(cvqkd_mutual_info_heterodyne(V_A, 1.0, 0.0)):.4f}')\n"
+    ))
+
+    cells.append(md(
+        "## 6. In the lab\n"
+        "\n"
+        "A practical CV-QKD receiver uses balanced homodyne detection: "
+        "the signal mode is mixed with a strong local oscillator on a "
+        "50:50 beam splitter, and the difference of the two photodiode "
+        "currents is proportional to the chosen quadrature. The same "
+        "component families &mdash; coherent 1550 nm lasers, balanced "
+        "detectors, ADCs, and DSP chains &mdash; are common in classical "
+        "coherent telecom, which is why CV-QKD can integrate naturally "
+        "with deployed fiber infrastructure."
+    ))
+
+    cells.append(md(
+        "## 7. What this notebook demonstrates\n"
+        "\n"
+        "1. **Two-quadrature Gaussian modulation.** Alice's $(x_A, p_A)$ "
+        "samples form an isotropic Gaussian with variance $V_A$.\n"
+        "2. **Channel action.** Bob's cloud is shrunk by $\\sqrt{\\eta}$ "
+        "and broadened by additional Gaussian noise of variance "
+        "$1 + \\eta\\xi$.\n"
+        "3. **SNR collapses exponentially with distance.** Same fiber "
+        "transmittance as Notebook 03 BB84.\n"
+        "4. **Homodyne vs heterodyne.** Different prefactor ($1/2$ vs "
+        "$1$) and different noise floor (1 vs 2). Comparison is for "
+        "raw mutual information only, not a secure-key claim.\n"
+        "\n"
+        "Notebook 05 takes these foundations and runs the Holevo bound + "
+        "asymptotic key-rate calculation."
+    ))
+
+    nb.cells = cells
+    nb.metadata = {
+        "kernelspec": {
+            "display_name": "Python 3",
+            "language": "python",
