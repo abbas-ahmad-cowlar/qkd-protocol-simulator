@@ -15,3 +15,7 @@ import nbformat as nbf
 NB_PATH = Path(__file__).resolve().parent / "05_key_rate_analysis.ipynb"
 
 
+def md(text: str) -> nbf.NotebookNode:
+    return nbf.v4.new_markdown_cell(text)
+
+
