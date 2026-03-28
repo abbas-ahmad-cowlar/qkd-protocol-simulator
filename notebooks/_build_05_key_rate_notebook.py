@@ -353,3 +353,36 @@ def build_notebook() -> nbf.NotebookNode:
         "\n"
         "1. **CV-QKD has a finite distance limit** &mdash; the cutoff "
         "value depends on $V_A$, $\\xi$, $\\eta_\\mathrm{det}$, "
+        "$\\beta$, and $\\alpha$.\n"
+        "2. **Excess noise dominates the long-distance behaviour.** "
+        "The cutoff falls dramatically as $\\xi$ rises through "
+        "$0.001 \\to 0.10$.\n"
+        "3. **Reconciliation efficiency multiplies $I(A:B)$ only.** "
+        "Lower $\\beta$ shrinks the secure region but does not "
+        "reduce $\\chi(B:E)$.\n"
+        "4. **Pure-loss intuition.** Crossing $\\beta\\,I(A:B) = "
+        "\\chi(B:E)$ on the $\\eta$-axis identifies the secure region "
+        "without simulating the protocol.\n"
+        "5. **Holevo from covariance matrix is universal.** The same "
+        "$\\chi$ formula works for pure-loss beam-splitting and "
+        "excess-noise entangling-cloner attacks.\n"
+        "6. **No range pre-claims.** The maximum distances in this "
+        "notebook are computed from the stated parameter sets; they "
+        "are not universal CV-vs-DV statements.\n"
+        "\n"
+        "Notebook 06 will sit on top of this and produce the headline "
+        "comparison figure."
+    ))
+
+    nb.cells = cells
+    nb.metadata = {
+        "kernelspec": {
+            "display_name": "Python 3",
+            "language": "python",
+            "name": "python3",
+        },
+        "language_info": {"name": "python"},
+    }
+    return nb
+
+
