@@ -463,3 +463,42 @@ def build_notebook() -> nbf.NotebookNode:
         "print('=' * 50)\n"
         "print(f'Python modules (src/)    : {n_modules}')\n"
         "print(f'Test files (tests/)      : {n_tests}')\n"
+        "print(f'Jupyter notebooks        : {n_notebooks}')\n"
+        "print(f'Saved figures (.png)     : {n_figures}')\n"
+        "print(f'BB84   cutoff (defaults) : {L_max_bb84:.1f} km')\n"
+        "print(f'CV-QKD cutoff (defaults) : {L_max_cvqkd:.1f} km')\n"
+        "print('=' * 50)\n"
+    ))
+
+    cells.append(md(
+        "## 11. What this notebook demonstrates\n"
+        "\n"
+        "1. **Both protocols compared on the same axes** under explicit, "
+        "reproducible parameter sets.\n"
+        "2. **Cutoff distances are computed**, not pre-claimed. They use "
+        "Brent root-finding on the *unclamped* "
+        "security expressions so the sign change is genuine.\n"
+        "3. **Different normalisations are explicit.** BB84 = bits per "
+        "pulse, CV-QKD = bits per symbol; the headline figure caption "
+        "and parameter box state this explicitly.\n"
+        "4. **Security labels are explicit.** BB84 is *asymptotic "
+        "simplified* (idealised single-photon); CV-QKD is "
+        "*asymptotic collective Gaussian attack* with an *untrusted-"
+        "detector* model.\n"
+        "5. **The honest claim** is that the repository implements and "
+        "validates comparable DV/CV-QKD asymptotic models, not that one "
+        "protocol is universally better."
+    ))
+
+    nb.cells = cells
+    nb.metadata = {
+        "kernelspec": {
+            "display_name": "Python 3",
+            "language": "python",
+            "name": "python3",
+        },
+        "language_info": {"name": "python"},
+    }
+    return nb
+
+
