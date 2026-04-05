@@ -65,3 +65,7 @@ def test_binary_entropy_symmetry():
         assert np.isclose(binary_entropy(p), binary_entropy(1.0 - p))
 
 
+def test_gaussian_entropy_vacuum_zero():
+    assert np.isclose(gaussian_entropy(1.0), 0.0, atol=1e-12)
+
+
