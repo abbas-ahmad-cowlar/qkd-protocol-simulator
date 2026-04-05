@@ -1,0 +1,514 @@
+"""
+Builder for notebooks/06_protocol_comparison.ipynb (Notebook 06: headline comparison).
+
+Run:
+    python notebooks/_build_06_protocol_comparison_notebook.py
+
+Then execute:
+    python notebooks/_execute_notebook.py 06_protocol_comparison.ipynb
+"""
+
+from pathlib import Path
+
+import nbformat as nbf
+
+NB_PATH = Path(__file__).resolve().parent / "06_protocol_comparison.ipynb"
+
+
+def md(text: str) -> nbf.NotebookNode:
+    return nbf.v4.new_markdown_cell(text)
+
+
+def code(text: str) -> nbf.NotebookNode:
+    return nbf.v4.new_code_cell(text)
+
+
+def build_notebook() -> nbf.NotebookNode:
+    nb = nbf.v4.new_notebook()
+    cells = []
+
+    cells.append(md(
+        "# BB84 vs CV-QKD: Headline Protocol Comparison\n"
+        "\n"
+        "Generated from the public notebook builder for reproducible analysis.\n"
+        "\n"
+        "Notebook 06 closes the project. No new physics modules are added; we "
+        "combine everything from the earlier notebooks into a single "
+        "headline figure that compares the BB84 and CV-QKD secure-key "
+        "rates on the same axes under explicit, reproducible parameter "
+        "sets.\n"
+        "\n"
+        "## What this comparison can and cannot claim\n"
+        "\n"
+        "* Both curves are *asymptotic* secure-key rates under stated "
+        "parameter assumptions. **Finite-key effects are not included.**\n"
+        "* BB84 rates are reported **per emitted pulse**; CV-QKD rates "
+        "are reported **per coherent-state symbol**. These are related "
+        "channel-use normalisations &mdash; *not* a direct hardware "
+        "throughput comparison.\n"
+        "* Cutoff distances and any \"winner\" language depend on the "
+        "specific parameter set. Changing detector efficiency, excess "
+        "noise, dark counts, or reconciliation efficiency changes the "
+        "relative ordering.\n"
+        "* The defensible claim is that this repository implements and "
+        "validates comparable DV/CV-QKD asymptotic models under stated "
+        "assumptions; it does not claim that one protocol universally "
+        "beats the other.\n"
+        "\n"
+        "## Stated parameters\n"
+        "\n"
+        "**BB84** (asymptotic simplified, idealised single-photon source):\n"
+        "* $\\mu = 0.1$, $\\eta_\\mathrm{det} = 0.2$, $p_\\mathrm{dark} = 10^{-6}$, $e_\\mathrm{det} = 0$\n"
+        "* $f_\\mathrm{ec} = 1.16$, $\\alpha = 0.2$ dB/km\n"
+        "* rate normalisation: per emitted pulse\n"
+        "\n"
+        "**CV-QKD GG02** (asymptotic collective Gaussian attack, "
+        "untrusted-detector model):\n"
+        "* $V_A = 20$ shot-noise units, $\\xi = 0.01$\n"
+        "* $\\eta_\\mathrm{det} = 0.6$, $\\beta = 0.95$, $\\alpha = 0.2$ dB/km\n"
+        "* rate normalisation: per coherent-state symbol"
+    ))
+
+    cells.append(md("## 1. Bootstrap and imports"))
+
+    cells.append(code(
+        "from pathlib import Path\n"
+        "import sys\n"
+        "\n"
+        "\n"
+        "def find_project_root(start=None):\n"
+        "    start = Path.cwd().resolve() if start is None else Path(start).resolve()\n"
+        "    for candidate in [start, *start.parents]:\n"
+        "        if (candidate / 'src').is_dir() and (candidate / 'notebooks').is_dir():\n"
+        "            return candidate\n"
+        "    raise RuntimeError('Could not find project root')\n"
+        "\n"
+        "\n"
+        "PROJECT_ROOT = find_project_root()\n"
+        "FIG_DIR = PROJECT_ROOT / 'figures'\n"
+        "FIG_DIR.mkdir(parents=True, exist_ok=True)\n"
+        "\n"
+        "if str(PROJECT_ROOT) not in sys.path:\n"
+        "    sys.path.insert(0, str(PROJECT_ROOT))\n"
+        "print(f'Project root: {PROJECT_ROOT}')\n"
+    ))
+
+    cells.append(code(
+        "import os\n"
+        "\n"
+        "import numpy as np\n"
+        "%matplotlib inline\n"
+        "import matplotlib.pyplot as plt\n"
+        "from scipy.optimize import brentq\n"
+        "\n"
+        "from src.channel import (\n"
+        "    bb84_key_rate, fiber_transmittance, qber_channel,\n"
+        ")\n"
+        "from src.cvqkd import (\n"
+        "    cvqkd_holevo_bound_homodyne,\n"
+        "    cvqkd_key_rate,\n"
+        "    cvqkd_mutual_info_homodyne,\n"
+        ")\n"
+        "from src.info_theory import binary_entropy\n"
+        "from src.plotting import semilogy_positive\n"
+        "\n"
+        "plt.style.use('seaborn-v0_8-whitegrid')\n"
+        "plt.rcParams.update({'font.size': 12, 'figure.dpi': 150})\n"
+        "\n"
+        "L = np.linspace(0.0, 300.0, 1001)\n"
+    ))
+
+    cells.append(md(
+        "## 2. Compute both key-rate curves\n"
+        "\n"
+        "These call the existing Notebook 03 / Notebook 04/05 implementations "
+        "verbatim &mdash; the headline figure is just a combined result."
+    ))
+
+    cells.append(code(
+        "rate_bb84 = bb84_key_rate(L)\n"
+        "rate_cvqkd = cvqkd_key_rate(L)\n"
+        "\n"
+        "print(f'BB84   K(0)   = {float(bb84_key_rate(0)):.6e} bits / pulse')\n"
+        "print(f'CV-QKD K(0)   = {float(cvqkd_key_rate(0)):.6e} bits / symbol')\n"
+        "print(f'BB84   K(50)  = {float(bb84_key_rate(50)):.6e} bits / pulse')\n"
+        "print(f'CV-QKD K(50)  = {float(cvqkd_key_rate(50)):.6e} bits / symbol')\n"
+        "print(f'BB84   K(150) = {float(bb84_key_rate(150)):.6e} bits / pulse')\n"
+        "print(f'CV-QKD K(150) = {float(cvqkd_key_rate(150)):.6e} bits / symbol')\n"
+    ))
+
+    cells.append(md(
+        "## 3. Cutoff distances via Brent root-finding \n"
+        "\n"
+        "We find the cutoff by running `scipy.optimize.brentq` on the "
+        "**unclamped** security expressions &mdash; "
+        "$1 - h(E) - f_{ec}h(E)$ for BB84 and "
+        "$\\beta\\,I(A:B) - \\chi(B:E)$ for CV-QKD &mdash; **not** on "
+        "the clamped key-rate curves, which lack a sign change.\n"
+        "\n"
+        "Nothing in the table below is hard-coded."
+    ))
+
+    cells.append(code(
+        "def bb84_unclamped_privacy_bracket(\n"
+        "    L_km, mu=0.1, eta_det=0.2, p_dark=1e-6, e_det=0.0,\n"
+        "    f_ec=1.16, alpha_db_per_km=0.2,\n"
+        "):\n"
+        "    qber = qber_channel(\n"
+        "        L_km, mu=mu, eta_det=eta_det, p_dark=p_dark,\n"
+        "        alpha_dB=alpha_db_per_km, e_det=e_det,\n"
+        "    )\n"
+        "    return float(1.0 - binary_entropy(qber) - f_ec * binary_entropy(qber))\n"
+        "\n"
+        "\n"
+        "def cvqkd_unclamped_key_expression(\n"
+        "    L_km, V_A=20.0, xi=0.01, beta=0.95, eta_det=0.6,\n"
+        "    alpha_db_per_km=0.2,\n"
+        "):\n"
+        "    eta_ch = float(fiber_transmittance(L_km, alpha_dB=alpha_db_per_km))\n"
+        "    eta = eta_ch * eta_det\n"
+        "    if eta <= 0.0:\n"
+        "        return -np.inf\n"
+        "    I_AB = float(cvqkd_mutual_info_homodyne(V_A=V_A, eta=eta, xi=xi))\n"
+        "    chi_BE = float(cvqkd_holevo_bound_homodyne(V_A=V_A, eta=eta, xi=xi))\n"
+        "    return beta * I_AB - chi_BE\n"
+        "\n"
+        "\n"
+        "def cutoff_from_unclamped(expr, L_grid):\n"
+        "    vals = np.array([expr(float(l)) for l in L_grid])\n"
+        "    finite = np.isfinite(vals)\n"
+        "    if not np.any(finite):\n"
+        "        raise ValueError('No finite values in cutoff search')\n"
+        "    if np.all(vals[finite] > 0):\n"
+        "        return float(L_grid[-1])\n"
+        "    crossing = np.where(finite & (vals <= 0))[0]\n"
+        "    if len(crossing) == 0:\n"
+        "        raise ValueError('No finite zero crossing found')\n"
+        "    idx = int(crossing[0])\n"
+        "    if idx == 0:\n"
+        "        return float(L_grid[0])\n"
+        "    return brentq(expr, float(L_grid[idx - 1]), float(L_grid[idx]))\n"
+        "\n"
+        "\n"
+        "L_max_bb84 = cutoff_from_unclamped(bb84_unclamped_privacy_bracket, L)\n"
+        "L_max_cvqkd = cutoff_from_unclamped(cvqkd_unclamped_key_expression, L)\n"
+        "\n"
+        "print(f'BB84   cutoff: {L_max_bb84:.2f} km')\n"
+        "print(f'CV-QKD cutoff: {L_max_cvqkd:.2f} km')\n"
+    ))
+
+    cells.append(md(
+        "## 4. The headline comparison figure\n"
+        "\n"
+        "* both curves on a `semilogy` axis with positive values masked,\n"
+        "* protocol-coloured vertical dashed lines at each cutoff,\n"
+        "* parameter text box listing all assumptions for both protocols,\n"
+        "* explicit security and normalisation labels,\n"
+        "* saved at 300 dpi to `figures/protocol_comparison.png` &mdash; "
+        "the file the README embeds."
+    ))
+
+    cells.append(code(
+        "fig, ax = plt.subplots(figsize=(10, 7))\n"
+        "\n"
+        "semilogy_positive(\n"
+        "    ax, L, rate_bb84, '-',\n"
+        "    color='#4C72B0', linewidth=2.5,\n"
+        "    label='BB84 (idealised single-photon, per pulse)',\n"
+        ")\n"
+        "semilogy_positive(\n"
+        "    ax, L, rate_cvqkd, '-',\n"
+        "    color='#C44E52', linewidth=2.5,\n"
+        "    label='CV-QKD GG02 (untrusted detector, per symbol)',\n"
+        ")\n"
+        "\n"
+        "ax.axvline(L_max_bb84, color='#4C72B0', linestyle='--', alpha=0.6,\n"
+        "           label=f'BB84 cutoff: {L_max_bb84:.0f} km')\n"
+        "ax.axvline(L_max_cvqkd, color='#C44E52', linestyle='--', alpha=0.6,\n"
+        "           label=f'CV-QKD cutoff: {L_max_cvqkd:.0f} km')\n"
+        "\n"
+        "ax.set_xlabel('Fiber distance (km)', fontsize=14)\n"
+        "ax.set_ylabel('Secure key rate (BB84 bits / pulse;  CV-QKD bits / symbol)',\n"
+        "              fontsize=13)\n"
+        "ax.set_title('BB84 vs CV-QKD: secure key rate vs distance',\n"
+        "             fontsize=16, fontweight='bold')\n"
+        "ax.legend(fontsize=10, loc='upper right')\n"
+        "ax.set_xlim(0, 300)\n"
+        "\n"
+        "bb84_text = (\n"
+        "    r'$\\bf{BB84}$: $\\mu = 0.1$, $\\eta_{det} = 0.2$,'\n"
+        "    + '\\n' + r'   $p_{dark} = 10^{-6}$, $e_{det} = 0$, $f_{ec} = 1.16$'\n"
+        "    + '\\n' + r'   asymptotic simplified BB84, per emitted pulse'\n"
+        ")\n"
+        "cv_text = (\n"
+        "    r'$\\bf{CV-QKD}$: $V_A = 20$, $\\xi = 0.01$,'\n"
+        "    + '\\n' + r'   $\\eta_{det} = 0.6$, $\\beta = 0.95$'\n"
+        "    + '\\n' + r'   asymptotic collective Gaussian attack,'\n"
+        "    + '\\n' + r'   untrusted detector, per symbol'\n"
+        ")\n"
+        "fiber_text = r'Fiber: $\\alpha = 0.2$ dB/km (1550 nm)'\n"
+        "param_text = '\\n'.join([bb84_text, cv_text, fiber_text])\n"
+        "\n"
+        "ax.text(\n"
+        "    0.02, 0.02, param_text, transform=ax.transAxes, fontsize=8,\n"
+        "    verticalalignment='bottom',\n"
+        "    bbox=dict(boxstyle='round,pad=0.5', facecolor='wheat',\n"
+        "              alpha=0.7, edgecolor='gray'),\n"
+        ")\n"
+        "ax.annotate(\n"
+        "    'Asymptotic secure key-rate bounds\\n'\n"
+        "    'under stated assumptions\\n'\n"
+        "    '(no finite-key corrections)',\n"
+        "    xy=(0.98, 0.98), xycoords='axes fraction',\n"
+        "    fontsize=8, ha='right', va='top', color='gray',\n"
+        "    fontstyle='italic',\n"
+        ")\n"
+        "\n"
+        "fig.text(\n"
+        "    0.5, 0.005,\n"
+        "    'Different normalisations (per pulse vs per symbol); '\n"
+        "    'cutoffs are computed from the code, not pre-claimed.',\n"
+        "    ha='center', fontsize=8, color='dimgray',\n"
+        ")\n"
+        "\n"
+        "plt.tight_layout(rect=(0.0, 0.04, 1.0, 1.0))\n"
+        "plt.savefig(FIG_DIR / 'protocol_comparison.png', dpi=300,\n"
+        "            bbox_inches='tight')\n"
+        "plt.show()\n"
+    ))
+
+    cells.append(md(
+        "## 5. Computed summary table \n"
+        "\n"
+        "Every value below is computed by calling the implementations &mdash; "
+        "no hard-coded numbers."
+    ))
+
+    cells.append(code(
+        "rate_targets = [0.0, 10.0, 50.0, 100.0, 150.0]\n"
+        "\n"
+        "header = (\n"
+        "    f'{\"Distance (km)\":>14}'\n"
+        "    f'{\"BB84 (bits / pulse)\":>22}'\n"
+        "    f'{\"CV-QKD (bits / symbol)\":>26}'\n"
+        ")\n"
+        "print(header)\n"
+        "print('=' * len(header))\n"
+        "for d in rate_targets:\n"
+        "    r_bb = float(bb84_key_rate(d))\n"
+        "    r_cv = float(cvqkd_key_rate(d))\n"
+        "    print(f'{d:>14.1f}{r_bb:>22.6e}{r_cv:>26.6e}')\n"
+        "print()\n"
+        "\n"
+        "print('Protocol summary table :')\n"
+        "print('=' * 110)\n"
+        "print(\n"
+        "    f'{\"Protocol\":<10}'\n"
+        "    f'{\"Source / detector\":<32}'\n"
+        "    f'{\"Trust model\":<22}'\n"
+        "    f'{\"Cutoff (km)\":>14}'\n"
+        "    f'{\"K @ 50 km\":>14}'\n"
+        "    f'  Security label'\n"
+        ")\n"
+        "print('-' * 110)\n"
+        "print(\n"
+        "    f'{\"BB84\":<10}'\n"
+        "    f'{\"idealised single-photon source\":<32}'\n"
+        "    f'{\"-- (single-photon)\":<22}'\n"
+        "    f'{L_max_bb84:>12.1f} km'\n"
+        "    f'{float(bb84_key_rate(50)):>14.4e}'\n"
+        "    f'  asymptotic simplified BB84'\n"
+        ")\n"
+        "print(\n"
+        "    f'{\"CV-QKD\":<10}'\n"
+        "    f'{\"GG02 Gaussian modulation\":<32}'\n"
+        "    f'{\"untrusted detector\":<22}'\n"
+        "    f'{L_max_cvqkd:>12.1f} km'\n"
+        "    f'{float(cvqkd_key_rate(50)):>14.4e}'\n"
+        "    f'  asymptotic collective Gaussian'\n"
+        ")\n"
+        "print('=' * 110)\n"
+    ))
+
+    cells.append(md(
+        "## 6. Practical-distance illustration\n"
+        "\n"
+        "If a deployment needs (say) **1 kbit / s** of secret key, what "
+        "is the longest fiber span each protocol can serve under these "
+        "parameters? We pick illustrative channel-use rates for each "
+        "&mdash; 1 GHz pulses for BB84 and 1 GHz coherent symbols for "
+        "CV-QKD &mdash; convert the threshold rate to the protocol's "
+        "natural unit, and root-find."
+    ))
+
+    cells.append(code(
+        "target_rate_bps = 1e3\n"
+        "bb84_pulse_rate_hz = 1e9\n"
+        "cv_symbol_rate_hz = 1e9\n"
+        "\n"
+        "bb84_target_per_pulse = target_rate_bps / bb84_pulse_rate_hz\n"
+        "cv_target_per_symbol = target_rate_bps / cv_symbol_rate_hz\n"
+        "\n"
+        "\n"
+        "def find_distance_for_rate(rate_func, target, L_range=(0.0, 300.0)):\n"
+        "    def f(l):\n"
+        "        return float(rate_func(l)) - target\n"
+        "    if f(L_range[0]) < 0:\n"
+        "        return 0.0\n"
+        "    if f(L_range[1]) >= 0:\n"
+        "        return float(L_range[1])\n"
+        "    return float(brentq(f, L_range[0], L_range[1]))\n"
+        "\n"
+        "\n"
+        "L_target_bb84 = find_distance_for_rate(bb84_key_rate, bb84_target_per_pulse)\n"
+        "L_target_cv = find_distance_for_rate(cvqkd_key_rate, cv_target_per_symbol)\n"
+        "\n"
+        "print(f'Target            : {target_rate_bps:.0f} bit / s')\n"
+        "print(f'BB84   threshold : {bb84_target_per_pulse:.1e} bits / pulse '\n"
+        "      f'at {bb84_pulse_rate_hz:.1e} pulses / s -> {L_target_bb84:.1f} km')\n"
+        "print(f'CV-QKD threshold : {cv_target_per_symbol:.1e} bits / symbol '\n"
+        "      f'at {cv_symbol_rate_hz:.1e} symbols / s -> {L_target_cv:.1f} km')\n"
+    ))
+
+    cells.append(md(
+        "## 7. When to use DV vs CV (under stated assumptions)\n"
+        "\n"
+        "**Metro networks (< 50 km)** &mdash; CV-QKD can be attractive "
+        "under low-excess-noise assumptions because it uses balanced "
+        "homodyne + standard telecom optics. This is a hardware-"
+        "integration argument, not a universal performance claim.\n"
+        "\n"
+        "**Long-haul backbone (> 100 km)** &mdash; decoy-state BB84 with "
+        "high-performance detectors (SNSPD, low dark counts) is "
+        "typically more competitive. CV-QKD's excess-noise sensitivity "
+        "shrinks the cutoff dramatically over long fibre.\n"
+        "\n"
+        "**Component reuse.** CV-QKD can reuse balanced detectors, "
+        "coherent lasers, and standard single-mode fiber from coherent "
+        "optical communication systems.\n"
+        "\n"
+        "**High-security deployments** &mdash; BB84 has the longer "
+        "track record of security proofs and a richer set of "
+        "device-independent / measurement-device-independent variants.\n"
+        "\n"
+        "**Hybrid networks** &mdash; future systems will likely use both "
+        "(CV-QKD on metro spans, decoy BB84 on backbones, connected by "
+        "trusted nodes / repeaters)."
+    ))
+
+    cells.append(md(
+        "## 8. Future directions in QKD\n"
+        "\n"
+        "* **Twin-field QKD** &mdash; routes around the repeaterless "
+        "  PLOB bound; the ideal-scaling asymptote is $\\propto "
+        "  \\sqrt{\\eta}$ rather than $\\eta$, opening a path to longer "
+        "  direct fibre links.\n"
+        "* **Satellite QKD** &mdash; free-space links escape exponential "
+        "  fibre attenuation. Demonstrations such as Micius show "
+        "  satellite-anchored quantum communication, with link "
+        "  performance dominated by orbit, weather, pointing loss, and "
+        "  link geometry.\n"
+        "* **Quantum repeaters** &mdash; quantum memory + entanglement "
+        "  swapping; still in early experimental stages but the route to "
+        "  scalable long-distance QKD without trusted nodes.\n"
+        "* **Measurement-device-independent QKD (MDI-QKD)** &mdash; "
+        "  removes detector side-channel attacks by sending states to an "
+        "  untrusted relay that performs Bell-state measurements.\n"
+        "* **CV-MDI-QKD** &mdash; combines CV-QKD with MDI; uses telecom "
+        "  components at both transmitters and the relay."
+    ))
+
+    cells.append(md(
+        "## 9. Technical summary\n"
+        "\n"
+        "This comparison notebook ties together the repository's core "
+        "technical pieces:\n"
+        "\n"
+        "1. **DV-QKD foundations.** BB84 basis sifting, QBER estimation, "
+        "the no-cloning theorem, intercept-resend disturbance, error "
+        "correction leakage, and privacy amplification.\n"
+        "2. **Fiber-channel modelling.** Telecom-band attenuation, detector "
+        "efficiency, dark counts, misalignment, and simplified decoy-state "
+        "intuition for weak coherent pulses.\n"
+        "3. **CV-QKD machinery.** Coherent states, homodyne detection, "
+        "covariance matrices, symplectic eigenvalues, reverse "
+        "reconciliation, and the Holevo bound.\n"
+        "4. **Reproducibility.** Vectorised NumPy implementations, public "
+        "notebook builders, generated figures, and regression tests that "
+        "lock the headline numerical values."
+    ))
+
+    cells.append(md(
+        "## 10. Repository statistics\n"
+        "\n"
+        "Computed at notebook execution time."
+    ))
+
+    cells.append(code(
+        "def count_files(suffix, root):\n"
+        "    return sum(\n"
+        "        1\n"
+        "        for dirpath, _, filenames in os.walk(root)\n"
+        "        for f in filenames\n"
+        "        if f.endswith(suffix)\n"
+        "    )\n"
+        "\n"
+        "n_modules = count_files('.py', PROJECT_ROOT / 'src')\n"
+        "n_tests = count_files('.py', PROJECT_ROOT / 'tests')\n"
+        "n_notebooks = count_files('.ipynb', PROJECT_ROOT / 'notebooks')\n"
+        "n_figures = count_files('.png', PROJECT_ROOT / 'figures')\n"
+        "\n"
+        "print('=' * 50)\n"
+        "print('QKD Protocol Simulator -- Repository statistics')\n"
+        "print('=' * 50)\n"
+        "print(f'Python modules (src/)    : {n_modules}')\n"
+        "print(f'Test files (tests/)      : {n_tests}')\n"
+        "print(f'Jupyter notebooks        : {n_notebooks}')\n"
+        "print(f'Saved figures (.png)     : {n_figures}')\n"
+        "print(f'BB84   cutoff (defaults) : {L_max_bb84:.1f} km')\n"
+        "print(f'CV-QKD cutoff (defaults) : {L_max_cvqkd:.1f} km')\n"
+        "print('=' * 50)\n"
+    ))
+
+    cells.append(md(
+        "## 11. What this notebook demonstrates\n"
+        "\n"
+        "1. **Both protocols compared on the same axes** under explicit, "
+        "reproducible parameter sets.\n"
+        "2. **Cutoff distances are computed**, not pre-claimed. They use "
+        "Brent root-finding on the *unclamped* "
+        "security expressions so the sign change is genuine.\n"
+        "3. **Different normalisations are explicit.** BB84 = bits per "
+        "pulse, CV-QKD = bits per symbol; the headline figure caption "
+        "and parameter box state this explicitly.\n"
+        "4. **Security labels are explicit.** BB84 is *asymptotic "
+        "simplified* (idealised single-photon); CV-QKD is "
+        "*asymptotic collective Gaussian attack* with an *untrusted-"
+        "detector* model.\n"
+        "5. **The honest claim** is that the repository implements and "
+        "validates comparable DV/CV-QKD asymptotic models, not that one "
+        "protocol is universally better."
+    ))
+
+    nb.cells = cells
+    nb.metadata = {
+        "kernelspec": {
+            "display_name": "Python 3",
+            "language": "python",
+            "name": "python3",
+        },
+        "language_info": {"name": "python"},
+    }
+    return nb
+
+
+def main():
+    nb = build_notebook()
+    NB_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with NB_PATH.open("w", encoding="utf-8") as fh:
+        nbf.write(nb, fh)
+    print(f"Wrote {NB_PATH}")
+
+
+if __name__ == "__main__":
+    main()
