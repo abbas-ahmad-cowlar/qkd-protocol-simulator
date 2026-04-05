@@ -69,3 +69,13 @@ def test_gaussian_entropy_vacuum_zero():
     assert np.isclose(gaussian_entropy(1.0), 0.0, atol=1e-12)
 
 
+def test_gaussian_entropy_monotone_above_vacuum():
+    nus = np.array([1.01, 2.0, 5.0, 10.0, 50.0])
+    g = gaussian_entropy(nus)
+    assert np.all(np.diff(g) > 0)
+
+
+# ===========================================================================
+# Fiber channel and BB84 per-pulse rate
+# ===========================================================================
+
