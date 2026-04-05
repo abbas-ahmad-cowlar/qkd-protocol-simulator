@@ -54,3 +54,9 @@ from src.info_theory import binary_entropy, gaussian_entropy
 # Information theory primitives
 # ===========================================================================
 
+def test_binary_entropy_endpoints():
+    assert binary_entropy(0.0) == 0.0
+    assert binary_entropy(1.0) == 0.0
+    assert np.isclose(binary_entropy(0.5), 1.0)
+
+
