@@ -60,3 +60,8 @@ def test_binary_entropy_endpoints():
     assert np.isclose(binary_entropy(0.5), 1.0)
 
 
+def test_binary_entropy_symmetry():
+    for p in [0.05, 0.10, 0.20, 0.30, 0.40]:
+        assert np.isclose(binary_entropy(p), binary_entropy(1.0 - p))
+
+
