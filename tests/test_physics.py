@@ -141,3 +141,16 @@ def test_bb84_default_cutoff_within_window():
 # CV-QKD: Gaussian formalism, Holevo bound, key rate
 # ===========================================================================
 
+def test_cv_pure_state_eigenvalues_unit():
+    """At eta = 1, xi = 0, V_A = 20: nu1 = nu2 = nu3 = 1."""
+    V_A = 20.0
+    V = V_A + 1.0
+    nu1, nu2, nu3, a, b, c = _cvqkd_symplectic_eigenvalues_homodyne(V_A, 1.0, 0.0)
+    assert np.isclose(nu1, 1.0, atol=1e-9)
+    assert np.isclose(nu2, 1.0, atol=1e-9)
+    assert np.isclose(nu3, 1.0, atol=1e-9)
+    assert np.isclose(a, V, atol=1e-12)
+    assert np.isclose(b, V, atol=1e-12)
+    assert np.isclose(c, np.sqrt(V**2 - 1.0), atol=1e-12)
+
+
