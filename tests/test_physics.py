@@ -117,3 +117,11 @@ def test_bb84_key_rate_decreasing_with_distance():
     (100.0, 9.117488e-05),
     (150.0, 4.661664e-06),
 ])
+def test_bb84_key_rate_regression(distance, expected):
+    """Lock the BB84 per-pulse rate at the canonical comparison points."""
+    actual = float(bb84_key_rate(distance))
+    assert np.isclose(actual, expected, rtol=1e-4), (
+        f"BB84 K({distance}) = {actual:.6e}, locked {expected:.6e}"
+    )
+
+
