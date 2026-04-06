@@ -159,3 +159,11 @@ def test_cv_holevo_pure_state_zero():
     assert np.isclose(chi, 0.0, atol=1e-9)
 
 
+def test_cv_eigenvalue_physicality_lossy_noisy():
+    nu1, nu2, nu3, *_ = _cvqkd_symplectic_eigenvalues_homodyne(20.0, 0.5, 0.01)
+    assert nu1 >= 1.0 - 1e-12
+    assert nu2 >= 1.0 - 1e-12
+    assert nu3 >= 1.0 - 1e-12
+    assert nu1 * nu2 >= 1.0 - 1e-12
+
+
