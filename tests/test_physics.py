@@ -154,3 +154,8 @@ def test_cv_pure_state_eigenvalues_unit():
     assert np.isclose(c, np.sqrt(V**2 - 1.0), atol=1e-12)
 
 
+def test_cv_holevo_pure_state_zero():
+    chi = cvqkd_holevo_bound_homodyne(20.0, 1.0, 0.0)
+    assert np.isclose(chi, 0.0, atol=1e-9)
+
+
