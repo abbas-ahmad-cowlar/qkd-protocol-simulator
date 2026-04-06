@@ -89,3 +89,7 @@ def test_qber_long_distance_random_limit():
     assert qber_channel(300.0) > 0.45
 
 
+def test_qber_short_distance_negligible():
+    assert qber_channel(0.0, e_det=0.0) < 1e-3
+
+
