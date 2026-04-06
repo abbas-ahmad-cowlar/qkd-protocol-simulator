@@ -79,3 +79,9 @@ def test_gaussian_entropy_monotone_above_vacuum():
 # Fiber channel and BB84 per-pulse rate
 # ===========================================================================
 
+def test_fiber_transmittance_canonical_values():
+    assert np.isclose(fiber_transmittance(0.0, 0.2), 1.0)
+    assert np.isclose(fiber_transmittance(50.0, 0.2), 0.1)
+    assert np.isclose(fiber_transmittance(100.0, 0.2), 1e-2)
+
+
