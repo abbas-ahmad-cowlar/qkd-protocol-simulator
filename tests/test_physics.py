@@ -93,3 +93,7 @@ def test_qber_short_distance_negligible():
     assert qber_channel(0.0, e_det=0.0) < 1e-3
 
 
+def test_bb84_key_rate_short_positive():
+    assert bb84_key_rate(0.0) > 0.0
+
+
