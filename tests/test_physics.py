@@ -85,3 +85,7 @@ def test_fiber_transmittance_canonical_values():
     assert np.isclose(fiber_transmittance(100.0, 0.2), 1e-2)
 
 
+def test_qber_long_distance_random_limit():
+    assert qber_channel(300.0) > 0.45
+
+
