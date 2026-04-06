@@ -97,3 +97,10 @@ def test_bb84_key_rate_short_positive():
     assert bb84_key_rate(0.0) > 0.0
 
 
+def test_bb84_key_rate_sweep_finite_nonneg():
+    L = np.linspace(0.0, 300.0, 301)
+    r = bb84_key_rate(L)
+    assert np.all(np.isfinite(r))
+    assert np.all(r >= 0.0)
+
+
