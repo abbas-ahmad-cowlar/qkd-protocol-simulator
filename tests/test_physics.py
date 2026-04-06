@@ -104,3 +104,16 @@ def test_bb84_key_rate_sweep_finite_nonneg():
     assert np.all(r >= 0.0)
 
 
+def test_bb84_key_rate_decreasing_with_distance():
+    rates = [float(bb84_key_rate(d)) for d in [0.0, 50.0, 100.0]]
+    assert rates[0] >= rates[1] >= rates[2]
+
+
+# ----- Locked-in numeric regression (Phase 6 headline) ----------------------
+
+@pytest.mark.parametrize("distance, expected", [
+    (0.0, 9.984011e-03),
+    (50.0, 9.875977e-04),
+    (100.0, 9.117488e-05),
+    (150.0, 4.661664e-06),
+])
