@@ -125,3 +125,19 @@ def test_bb84_key_rate_regression(distance, expected):
     )
 
 
+def test_bb84_default_cutoff_within_window():
+    """BB84 cutoff (default parameters) computed via brentq on the unclamped
+    privacy bracket. Locked at 169.38 km; allow a small tolerance."""
+
+    def bracket(L_km):
+        q = qber_channel(L_km)
+        return float(1.0 - binary_entropy(q) - 1.16 * binary_entropy(q))
+
+    L_max = brentq(bracket, 1e-6, 500.0)
+    assert abs(L_max - 169.38) < 0.5, f"BB84 cutoff {L_max:.2f}, locked 169.38"
+
+
+# ===========================================================================
+# CV-QKD: Gaussian formalism, Holevo bound, key rate
+# ===========================================================================
+
