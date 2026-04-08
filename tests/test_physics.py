@@ -238,3 +238,12 @@ def test_both_protocols_positive_at_zero():
     assert cvqkd_key_rate(0.0) > 0.0
 
 
+def test_both_protocols_zero_at_300km():
+    assert float(bb84_key_rate(300.0)) == 0.0
+    assert float(cvqkd_key_rate(300.0)) == 0.0
+
+
+# ===========================================================================
+# Stochastic BB84 regression (full pipeline including Eve)
+# ===========================================================================
+
