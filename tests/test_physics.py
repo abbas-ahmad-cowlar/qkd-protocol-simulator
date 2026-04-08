@@ -182,3 +182,10 @@ def test_cv_key_rate_short_positive():
     assert cvqkd_key_rate(0.0) > 0.0
 
 
+def test_cv_key_rate_sweep_finite_nonneg():
+    L = np.linspace(0.0, 300.0, 301)
+    r = cvqkd_key_rate(L)
+    assert np.all(np.isfinite(r))
+    assert np.all(r >= 0.0)
+
+
