@@ -247,3 +247,20 @@ def test_both_protocols_zero_at_300km():
 # Stochastic BB84 regression (full pipeline including Eve)
 # ===========================================================================
 
+def test_intercept_resend_qber_25_percent():
+    """Statistical test on the full Eve pipeline at N = 100,000.
+    Standard error at p = 0.25 over ~50,000 sifted samples is ~0.002,
+    so 0.01 absolute tolerance is roughly five sigma."""
+    rng = np.random.default_rng(2026)
+    N = 100_000
+    a_bits, a_bases = alice_prepare(N, rng=rng)
+    _, fwd_bits, fwd_bases, _ = eve_intercept_resend(
+        a_bits, a_bases, interception_rate=1.0, rng=rng,
+    )
+    b_bases = rng.integers(0, 2, N)
+    b_bits = bob_measure(fwd_bits, fwd_bases, b_bases, rng=rng)
+    a_s, b_s = sift(a_bits, b_bits, a_bases, b_bases)
+    qber = float(np.mean(a_s != b_s))
+    assert abs(qber - 0.25) < 0.01, f"intercept-resend QBER = {qber:.4f}"
+
+
