@@ -212,3 +212,24 @@ def test_cv_key_rate_regression(distance, expected):
         )
 
 
+def test_cv_default_cutoff_within_window():
+    """CV-QKD cutoff (default parameters) via brentq on the unclamped
+    beta * I(A:B) - chi(B:E) expression. Locked at 74.19 km."""
+
+    def bracket(L_km):
+        eta_ch = float(fiber_transmittance(L_km, 0.2))
+        eta = eta_ch * 0.6
+        if eta <= 0.0:
+            return -np.inf
+        I_AB = float(cvqkd_mutual_info_homodyne(20.0, eta, 0.01))
+        chi_BE = float(cvqkd_holevo_bound_homodyne(20.0, eta, 0.01))
+        return 0.95 * I_AB - chi_BE
+
+    L_max = brentq(bracket, 1e-6, 500.0)
+    assert abs(L_max - 74.19) < 0.5, f"CV cutoff {L_max:.2f}, locked 74.19"
+
+
+# ===========================================================================
+# Cross-protocol sanity
+# ===========================================================================
+
