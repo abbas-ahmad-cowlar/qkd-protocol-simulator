@@ -178,3 +178,7 @@ def test_cv_mutual_info_noiseless_homodyne():
     assert np.isclose(I, 0.5 * np.log2(21.0), rtol=1e-9)
 
 
+def test_cv_key_rate_short_positive():
+    assert cvqkd_key_rate(0.0) > 0.0
+
+
