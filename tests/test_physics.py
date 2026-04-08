@@ -173,3 +173,8 @@ def test_cv_holevo_finite_at_half_eta():
     assert np.isfinite(chi)
 
 
+def test_cv_mutual_info_noiseless_homodyne():
+    I = cvqkd_mutual_info_homodyne(20.0, 1.0, 0.0)
+    assert np.isclose(I, 0.5 * np.log2(21.0), rtol=1e-9)
+
+
