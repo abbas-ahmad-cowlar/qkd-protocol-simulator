@@ -202,3 +202,13 @@ def test_cv_key_rate_decreasing_with_distance():
     (100.0, 0.0),
     (150.0, 0.0),
 ])
+def test_cv_key_rate_regression(distance, expected):
+    actual = float(cvqkd_key_rate(distance))
+    if expected == 0.0:
+        assert actual == 0.0
+    else:
+        assert np.isclose(actual, expected, rtol=1e-4), (
+            f"CV K({distance}) = {actual:.6e}, locked {expected:.6e}"
+        )
+
+
