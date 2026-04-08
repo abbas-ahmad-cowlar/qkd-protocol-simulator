@@ -264,3 +264,16 @@ def test_intercept_resend_qber_25_percent():
     assert abs(qber - 0.25) < 0.01, f"intercept-resend QBER = {qber:.4f}"
 
 
+def test_no_eve_qber_zero():
+    rng = np.random.default_rng(2026)
+    N = 10_000
+    a_bits, a_bases = alice_prepare(N, rng=rng)
+    b_bases = rng.integers(0, 2, N)
+    b_bits = bob_measure(a_bits, a_bases, b_bases, rng=rng)
+    a_s, b_s = sift(a_bits, b_bits, a_bases, b_bases)
+    qber = float(np.mean(a_s != b_s)) if len(a_s) > 0 else 0.0
+    assert qber == 0.0
+
+
+if __name__ == "__main__":
+    sys.exit(pytest.main([__file__, "-v"]))
