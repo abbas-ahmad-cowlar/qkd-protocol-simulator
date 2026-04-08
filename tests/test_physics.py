@@ -167,3 +167,9 @@ def test_cv_eigenvalue_physicality_lossy_noisy():
     assert nu1 * nu2 >= 1.0 - 1e-12
 
 
+def test_cv_holevo_finite_at_half_eta():
+    chi = cvqkd_holevo_bound_homodyne(20.0, 0.5, 0.01)
+    assert chi > 0.0
+    assert np.isfinite(chi)
+
+
