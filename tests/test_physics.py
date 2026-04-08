@@ -233,3 +233,8 @@ def test_cv_default_cutoff_within_window():
 # Cross-protocol sanity
 # ===========================================================================
 
+def test_both_protocols_positive_at_zero():
+    assert bb84_key_rate(0.0) > 0.0
+    assert cvqkd_key_rate(0.0) > 0.0
+
+
