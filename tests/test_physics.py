@@ -189,3 +189,16 @@ def test_cv_key_rate_sweep_finite_nonneg():
     assert np.all(r >= 0.0)
 
 
+def test_cv_key_rate_decreasing_with_distance():
+    rates = [float(cvqkd_key_rate(d)) for d in [0.0, 50.0, 100.0]]
+    assert rates[0] >= rates[1] >= rates[2]
+
+
+# ----- Locked-in CV regression (Phase 6 headline) ---------------------------
+
+@pytest.mark.parametrize("distance, expected", [
+    (0.0, 4.524346e-01),
+    (50.0, 9.236829e-03),
+    (100.0, 0.0),
+    (150.0, 0.0),
+])
