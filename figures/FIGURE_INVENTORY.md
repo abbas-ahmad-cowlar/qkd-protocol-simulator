@@ -22,3 +22,8 @@ plots mask zero or negative values before plotting.
 | 14 | `homodyne_vs_heterodyne.png` | Notebook 04 | Yes | Linear, 300 dpi | Caption says raw mutual information only, not secure-key comparison |
 | 15 | `cvqkd_key_rate_distance.png` | Notebook 05 | Yes | Semilogy positive rates only, 300 dpi | Key rate decreases and reaches zero at the computed cutoff |
 | 16 | `excess_noise_effect.png` | Notebook 05 | Yes | Semilogy positive rates only, 300 dpi | Higher excess noise lowers rate and cutoff distance |
+| 17 | `cvqkd_reconciliation_efficiency.png` | Notebook 05 | No | Semilogy positive rates only, 300 dpi | Higher reconciliation efficiency increases key rate |
+| 18 | `cvqkd_pure_loss_information.png` | Notebook 05 | No | Linear, 300 dpi | Shows I(A:B), chi(B:E), and the secure region for pure loss |
+| 19 | `protocol_comparison.png` | Notebook 06 | Yes | Semilogy positive rates only, 300 dpi | Caption states BB84 bits/pulse and CV bits/symbol normalisations; both cutoffs computed via `brentq` on unclamped expressions |
+| Diagnostic | `bb84_key_rate_curve.png` | Notebook 01 diagnostic | No | Linear, 300 dpi | Per-sifted-bit key rate vs QBER for `f_ec` in {1.00, 1.16, 1.50}; threshold lines visible |
+| Diagnostic | `bb84_vs_cvqkd_key_rate.png` | Notebook 05 diagnostic | No | Semilogy positive rates only, 300 dpi | Same overlay as figure 19 but plotted from notebook 05 to expose the per-pulse vs per-symbol normalisation difference; not a security ranking |
