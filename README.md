@@ -41,3 +41,12 @@ headline figure:
 
 ## Key Figures
 
+### BB84 key rate vs distance
+
+![BB84 key rate vs distance](figures/bb84_key_rate_distance.png)
+
+The BB84 per-pulse key rate is computed as a function of fiber length under
+the standard direct-link parameter set. The cutoff lies in the documented
+150-200 km window for the idealised single-photon source model. Practical
+weak-coherent-pulse security requires decoy-state analysis.
+
