@@ -50,3 +50,11 @@ the standard direct-link parameter set. The cutoff lies in the documented
 150-200 km window for the idealised single-photon source model. Practical
 weak-coherent-pulse security requires decoy-state analysis.
 
+### CV-QKD key rate vs distance
+
+![CV-QKD key rate vs distance](figures/cvqkd_key_rate_distance.png)
+
+The CV-QKD per-symbol key rate is computed from the Holevo bound using
+symplectic eigenvalues of the joint Alice-Bob covariance matrix. The default
+cutoff is 74.2 km, with excess noise as the dominant long-distance limiter.
+
