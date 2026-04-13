@@ -58,3 +58,14 @@ The CV-QKD per-symbol key rate is computed from the Holevo bound using
 symplectic eigenvalues of the joint Alice-Bob covariance matrix. The default
 cutoff is 74.2 km, with excess noise as the dominant long-distance limiter.
 
+### QBER under eavesdropping
+
+![QBER vs interception probability](figures/qber_vs_interception.png)
+
+The intercept-resend simulation verifies the canonical BB84 result: full
+interception produces QBER = 25% from the Born rule applied twice
+(1/2 x 1/2). Partial interception scales linearly: QBER = 0.25 x p.
+
+A complete release inventory for the generated figures is in
+[`figures/FIGURE_INVENTORY.md`](figures/FIGURE_INVENTORY.md).
+
