@@ -69,3 +69,15 @@ interception produces QBER = 25% from the Born rule applied twice
 A complete release inventory for the generated figures is in
 [`figures/FIGURE_INVENTORY.md`](figures/FIGURE_INVENTORY.md).
 
+## Technical Motivation
+
+BB84 and GG02/CV-QKD are useful side-by-side because they expose different
+physical and modelling tradeoffs. BB84 makes basis sifting, QBER, dark
+counts, and decoy-state motivation transparent. GG02 brings in coherent
+states, homodyne detection, covariance matrices, symplectic eigenvalues,
+and the Holevo bound.
+
+The repository keeps those concepts in a compact numerical form: vectorised
+NumPy implementations, six notebooks that regenerate the figures, and tests
+that lock the main physics checks and headline values.
+
