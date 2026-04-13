@@ -39,3 +39,5 @@ headline figure:
 > efficiency changes the relative ordering. See the parameter box on the
 > figure for the exact assumptions.
 
+## Key Figures
+
