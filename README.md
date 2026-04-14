@@ -135,3 +135,36 @@ python notebooks/_execute_notebook.py 06_protocol_comparison.ipynb
 The project runs on Python 3.10+ with NumPy, SciPy, Matplotlib, nbformat,
 nbclient, and pytest.
 
+## Project Structure
+
+```text
+qkd-protocol-simulator/
+|-- src/
+|   |-- __init__.py
+|   |-- info_theory.py          # Entropy primitives + Gaussian entropy
+|   |-- bb84.py                 # BB84 protocol + intercept-resend model
+|   |-- channel.py              # Fiber channel + BB84 per-pulse key rate
+|   |-- cvqkd.py                # GG02 + Holevo bound + per-symbol key rate
+|   `-- plotting.py             # Shared semilogy helper for masked log-scale plots
+|-- tests/
+|   |-- smoke_test.py
+|   |-- test_info_theory.py     # 30 tests
+|   |-- test_bb84.py            # 37 tests
+|   |-- test_channel.py         # 26 tests
+|   |-- test_cvqkd.py           # 25 tests
+|   `-- test_physics.py         # 32 cross-module regression tests
+|-- notebooks/
+|   |-- 01_bb84_protocol.ipynb
+|   |-- 02_eve_attacks.ipynb
+|   |-- 03_fiber_channel.ipynb
+|   |-- 04_cvqkd_protocol.ipynb
+|   |-- 05_key_rate_analysis.ipynb
+|   |-- 06_protocol_comparison.ipynb
+|   `-- _build_*_notebook.py    # Reproducible notebook builders
+|-- figures/                    # 21 PNGs at 300 dpi + FIGURE_INVENTORY.md
+|-- requirements.txt
+|-- pyproject.toml
+|-- LICENSE
+`-- README.md
+```
+
