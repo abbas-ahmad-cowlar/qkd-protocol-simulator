@@ -123,3 +123,15 @@ python notebooks/_build_04_cvqkd_protocol_notebook.py
 python notebooks/_build_05_key_rate_notebook.py
 python notebooks/_build_06_protocol_comparison_notebook.py
 
+# Execute notebooks end-to-end when fresh outputs are needed
+python notebooks/_execute_notebook.py 01_bb84_protocol.ipynb
+python notebooks/_execute_notebook.py 02_eve_attacks.ipynb
+python notebooks/_execute_notebook.py 03_fiber_channel.ipynb
+python notebooks/_execute_notebook.py 04_cvqkd_protocol.ipynb
+python notebooks/_execute_notebook.py 05_key_rate_analysis.ipynb
+python notebooks/_execute_notebook.py 06_protocol_comparison.ipynb
+```
+
+The project runs on Python 3.10+ with NumPy, SciPy, Matplotlib, nbformat,
+nbclient, and pytest.
+
