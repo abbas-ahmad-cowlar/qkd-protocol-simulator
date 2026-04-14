@@ -112,3 +112,6 @@ python -m venv venv
 pip install -r requirements.txt
 pip install -e .
 
+# Run all tests
+python -m pytest tests/ -v
+
