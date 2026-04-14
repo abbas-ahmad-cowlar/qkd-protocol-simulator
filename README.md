@@ -115,3 +115,11 @@ pip install -e .
 # Run all tests
 python -m pytest tests/ -v
 
+# Rebuild notebooks from source
+python notebooks/_build_01_bb84_notebook.py
+python notebooks/_build_02_eve_attacks_notebook.py
+python notebooks/_build_03_fiber_channel_notebook.py
+python notebooks/_build_04_cvqkd_protocol_notebook.py
+python notebooks/_build_05_key_rate_notebook.py
+python notebooks/_build_06_protocol_comparison_notebook.py
+
