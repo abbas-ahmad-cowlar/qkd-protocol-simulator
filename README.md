@@ -96,3 +96,6 @@ Every notebook can be rebuilt from its corresponding
 `notebooks/_build_*_notebook.py` source. The `tests/test_physics.py`
 regression suite locks the headline numbers.
 
+## Installation
+
+```powershell
