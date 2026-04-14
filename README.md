@@ -108,3 +108,7 @@ python -m venv venv
 .\venv\Scripts\Activate.ps1   # Windows PowerShell
 # source venv/bin/activate    # macOS / Linux
 
+# Install dependencies
+pip install -r requirements.txt
+pip install -e .
+
