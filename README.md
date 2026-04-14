@@ -106,3 +106,5 @@ cd qkd-protocol-simulator
 # Optional: virtual environment
 python -m venv venv
 .\venv\Scripts\Activate.ps1   # Windows PowerShell
+# source venv/bin/activate    # macOS / Linux
+
