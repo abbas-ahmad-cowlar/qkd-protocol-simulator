@@ -81,3 +81,18 @@ The repository keeps those concepts in a compact numerical form: vectorised
 NumPy implementations, six notebooks that regenerate the figures, and tests
 that lock the main physics checks and headline values.
 
+## Notebooks
+
+| # | File | Purpose |
+|---|---|---|
+| 01 | [`01_bb84_protocol.ipynb`](notebooks/01_bb84_protocol.ipynb) | BB84 protocol on the ideal channel: basis agreement, sifting, end-to-end pipeline at N = 100,000 |
+| 02 | [`02_eve_attacks.ipynb`](notebooks/02_eve_attacks.ipynb) | Intercept-resend attack: QBER = 25% derivation, security threshold, security summary table |
+| 03 | [`03_fiber_channel.ipynb`](notebooks/03_fiber_channel.ipynb) | Fiber channel model: transmittance, dark-count QBER, BB84 distance limit, parameter sweeps, decoy comparison |
+| 04 | [`04_cvqkd_protocol.ipynb`](notebooks/04_cvqkd_protocol.ipynb) | GG02 protocol: phase-space scatter plots, channel transformation, mutual information vs distance |
+| 05 | [`05_key_rate_analysis.ipynb`](notebooks/05_key_rate_analysis.ipynb) | CV-QKD key rate vs distance, excess-noise and reconciliation-efficiency sensitivity, beam-splitting intuition |
+| 06 | [`06_protocol_comparison.ipynb`](notebooks/06_protocol_comparison.ipynb) | Headline comparison: BB84 and CV-QKD on the same axes with computed cutoffs and explicit caveats |
+
+Every notebook can be rebuilt from its corresponding
+`notebooks/_build_*_notebook.py` source. The `tests/test_physics.py`
+regression suite locks the headline numbers.
+
