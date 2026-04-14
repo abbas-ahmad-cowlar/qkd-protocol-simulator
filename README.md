@@ -168,3 +168,36 @@ qkd-protocol-simulator/
 `-- README.md
 ```
 
+## Assumptions and Limitations
+
+The simulator produces **asymptotic** secure key rates under simplified
+security models. Real deployments must address the following:
+
+1. **Asymptotic key rates.** No finite-key corrections are applied.
+   Practical short-block-length rates would be lower; composable security
+   proofs are out of scope.
+2. **BB84 source model.** The BB84 key rate uses an idealised single-photon
+   source. A simplified asymptotic decoy-state estimator
+   (`src.channel.decoy_bb84_key_rate`) is included so the realistic
+   weak-coherent-pulse case can be compared, but the headline figure plots
+   the idealised single-photon curve and labels it as such.
+3. **CV-QKD detector model.** The CV-QKD key rate uses the strict
+   untrusted-detector model: all detector inefficiency is attributed to Eve.
+   A trusted-detector model would yield higher rates but requires physical
+   assumptions about detector security.
+4. **CV-QKD security model.** Bounds are asymptotic collective Gaussian
+   attack bounds following Laudenbach et al. (2018). Composable security and
+   coherent attacks would yield tighter bounds.
+5. **Heterodyne MI only.** The heterodyne mutual information is plotted in
+   notebook 04 for raw comparison only. The matching heterodyne Holevo bound
+   is not implemented, so heterodyne plots are explicitly labelled "not a
+   secure-key comparison".
+6. **No side-channel analysis.** Implementation imperfections such as
+   detector blinding, Trojan-horse attacks, and phase remapping are not
+   modelled.
+7. **No range pre-claims.** Maximum-distance numbers are computed from the
+   code under the stated parameter sets. They are not universal CV-vs-DV
+   performance rankings.
+8. **No "unbreakable" language.** The project consistently uses
+   "information-theoretic security under stated assumptions."
+
