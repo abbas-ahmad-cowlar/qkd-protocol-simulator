@@ -103,3 +103,6 @@ regression suite locks the headline numbers.
 git clone https://github.com/<your-handle>/qkd-protocol-simulator.git
 cd qkd-protocol-simulator
 
+# Optional: virtual environment
+python -m venv venv
+.\venv\Scripts\Activate.ps1   # Windows PowerShell
