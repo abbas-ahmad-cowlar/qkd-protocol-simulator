@@ -99,3 +99,7 @@ regression suite locks the headline numbers.
 ## Installation
 
 ```powershell
+# Clone the repository
+git clone https://github.com/<your-handle>/qkd-protocol-simulator.git
+cd qkd-protocol-simulator
+
