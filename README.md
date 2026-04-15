@@ -239,3 +239,6 @@ security models. Real deployments must address the following:
 6. Pirandola, S. *et al.* (2020). "Advances in quantum cryptography."
    *Adv. Opt. Photon.* **12**, 1012.
 
+## License
+
+MIT - see [`LICENSE`](LICENSE).
