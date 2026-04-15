@@ -218,3 +218,24 @@ security models. Real deployments must address the following:
 * The figure inventory enumerates each figure's producing notebook, scale,
   dpi, and sanity check.
 
+## References
+
+1. Bennett, C. H. & Brassard, G. (1984). "Quantum cryptography: public key
+   distribution and coin tossing." *Proc. IEEE Int. Conf. Comp. Sys. Sig.
+   Proc.*, 175.
+2. Wootters, W. K. & Zurek, W. H. (1982). "A single quantum cannot be
+   cloned." *Nature* **299**, 802.
+3. Grosshans, F. & Grangier, P. (2002). "Continuous-variable quantum
+   cryptography is possible without postselection." *Phys. Rev. Lett.*
+   **88**, 057902.
+4. Lo, H.-K., Ma, X. & Chen, K. (2005). "Decoy state quantum key
+   distribution." *Phys. Rev. Lett.* **94**, 230504.
+   [arXiv:quant-ph/0411004](https://arxiv.org/abs/quant-ph/0411004)
+5. Laudenbach, F. *et al.* (2018). "Continuous-Variable Quantum Key
+   Distribution with Gaussian Modulation - The Theory of Practical
+   Implementations." *Adv. Quantum Technol.* **1**, 1800011.
+   [DOI:10.1002/qute.201800011](https://doi.org/10.1002/qute.201800011) /
+   [arXiv:1703.09278](https://arxiv.org/abs/1703.09278)
+6. Pirandola, S. *et al.* (2020). "Advances in quantum cryptography."
+   *Adv. Opt. Photon.* **12**, 1012.
+
