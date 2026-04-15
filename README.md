@@ -201,3 +201,20 @@ security models. Real deployments must address the following:
 8. **No "unbreakable" language.** The project consistently uses
    "information-theoretic security under stated assumptions."
 
+## Verification
+
+* `python -m pytest tests/ -v`: 150 tests covering:
+  * 30 information-theory primitives: entropy, mutual information,
+    Gaussian entropy.
+  * 37 BB84 and intercept-resend tests, including the statistical 25% QBER
+    check.
+  * 26 fiber-channel tests, including cutoff windows and edge cases.
+  * 25 CV-QKD tests, including the pure-state limit.
+  * 32 cross-module physics regression tests that lock numerical headline
+    values from the comparison notebook.
+* All six notebooks are generated from public builder scripts and can be
+  executed end-to-end at N = 100,000 for BB84 and L = 0 to 300 km on a
+  1001-point grid for CV-QKD.
+* The figure inventory enumerates each figure's producing notebook, scale,
+  dpi, and sanity check.
+
