@@ -100,7 +100,7 @@ regression suite locks the headline numbers.
 
 ```powershell
 # Clone the repository
-git clone https://github.com/<your-handle>/qkd-protocol-simulator.git
+git clone https://github.com/abbas-ahmad-cowlar/qkd-protocol-simulator.git
 cd qkd-protocol-simulator
 
 # Optional: virtual environment
