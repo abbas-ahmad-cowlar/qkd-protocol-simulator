@@ -71,7 +71,7 @@ def build_notebook() -> nbf.NotebookNode:
         "\n"
         "if str(PROJECT_ROOT) not in sys.path:\n"
         "    sys.path.insert(0, str(PROJECT_ROOT))\n"
-        "print(f'Project root: {PROJECT_ROOT}')\n"
+        "print('Project root: repository root')\n"
     ))
 
     cells.append(code(

@@ -86,8 +86,8 @@ def build_notebook() -> nbf.NotebookNode:
         "if str(PROJECT_ROOT) not in sys.path:\n"
         "    sys.path.insert(0, str(PROJECT_ROOT))\n"
         "\n"
-        "print(f'Project root: {PROJECT_ROOT}')\n"
-        "print(f'Figure dir : {FIG_DIR}')\n"
+        "print('Project root: repository root')\n"
+        "print('Figure dir : figures/')\n"
     ))
 
     cells.append(code(
